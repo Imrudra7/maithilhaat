@@ -1,5 +1,5 @@
 // src/lib/mock-data.ts
-import { Product, Category } from "@/types/product";
+import { ProductResponse as Product, CategoryResponse as Category } from "@/types/product";
 
 export const MOCK_PRODUCTS: Product[] = [
   {
@@ -7,6 +7,7 @@ export const MOCK_PRODUCTS: Product[] = [
     categoryId: "uuid-cat-paintings",
     merchantId: "uuid-merchant-1",
     name: "Classic Madhubani Tree of Life",
+    slug: "classic-madhubani-tree-of-life",
     description: "Authentic handmade painting on handmade paper using natural colors.",
     type: "PHYSICAL",
     imageUrl: "https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?q=80&w=800",

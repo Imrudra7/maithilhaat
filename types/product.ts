@@ -42,3 +42,23 @@ export interface MerchantResponse {
   isActive: boolean;
   createdAt: string;
 }
+
+// src/types/product.ts
+
+export interface ProductResponse {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  categoryId: string;
+  merchantId: string;
+  type: ProductType;
+  attributes: Record<string, any>;
+  imageUrl: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string; // 👈 Ye line add karo
+  variants: ProductVariantResponse[];
+}
+
+//export type Product = ProductResponse;

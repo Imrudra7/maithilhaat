@@ -5,13 +5,14 @@ import React from 'react';
 import { ShoppingCart, Heart, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Product } from '@/types/product'; 
+import { ProductResponse as Product } from '@/types/product';
 import Link from 'next/link';
 
 const products: Product[] = [
   {
     id: "p1",
     name: "Classic Madhubani Tree of Life",
+    slug: "classic-madhubani-tree-of-life",
     categoryId: "cat-123",
     merchantId: "mer-456",
     description: "Authentic handmade painting",
@@ -36,6 +37,7 @@ const products: Product[] = [
   {
     id: "p2",
     name: "Handpainted Silk Saree - Lotus",
+    slug: "handpainted-silk-saree-lotus",
     categoryId: "cat-456",
     merchantId: "mer-789",
     description: "Premium silk with Mithila motifs",
@@ -72,15 +74,15 @@ export default function FeaturedProducts() {
       {products.map((product) => {
         const displayVariant = product.variants.find(v => v.isActive) || product.variants[0];
         const hasDiscount = displayVariant.price > displayVariant.salePrice;
-        const discountPercentage = hasDiscount 
-          ? Math.round(((displayVariant.price - displayVariant.salePrice) / displayVariant.price) * 100) 
+        const discountPercentage = hasDiscount
+          ? Math.round(((displayVariant.price - displayVariant.salePrice) / displayVariant.price) * 100)
           : 0;
 
         return (
           /* 🔥 Link se wrap kiya hai taaki poora card clickable ho */
-          <Link 
-            key={product.id} 
-            href={`/product/${product.id}`} 
+          <Link
+            key={product.id}
+            href={`/product/${product.id}`}
             className="group relative flex flex-col bg-white rounded-2xl overflow-hidden border border-slate-100 hover:shadow-2xl transition-all duration-500 cursor-pointer"
           >
             {/* Image Section */}
@@ -90,23 +92,23 @@ export default function FeaturedProducts() {
                   {discountPercentage}% OFF
                 </Badge>
               )}
-              
-              <button 
+
+              <button
                 className="absolute top-3 right-3 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full text-slate-400 hover:text-red-500 transition-colors"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
               >
                 <Heart size={18} />
               </button>
-              
-              <img 
-                src={product.imageUrl} 
+
+              <img
+                src={product.imageUrl}
                 alt={product.name}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
 
               {/* Action Button (Instamart Feel) */}
               <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/80 to-transparent">
-                <Button 
+                <Button
                   className="w-full font-bold gap-2 rounded-xl h-11 shadow-lg"
                   onClick={(e) => handleAddToCart(e, product.id)}
                 >
