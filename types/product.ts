@@ -27,12 +27,14 @@ export interface ProductResponse {
   variants: ProductVariantResponse[];
 }
 
+
 export interface CategoryResponse {
   id: string;
   name: string;
+  level: number;
   parentId: string | null;
-  isActive: boolean;
-  children: CategoryResponse[]; // Tree structure ke liye
+  active: boolean;
+  children: CategoryResponse[];
 }
 
 export interface MerchantResponse {
