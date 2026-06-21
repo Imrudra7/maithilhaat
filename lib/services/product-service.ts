@@ -13,7 +13,7 @@ export const productService = {
 
     // 2. Get Category Tree (Menu ke liye)
     getCategoryTree: async (merchantId?: string): Promise<CategoryResponse[]> => {
-        const url = merchantId ? `${productUrl}/category/tree?merchantId=${merchantId}` : `${productUrl}/category/tree`;
+        const url = merchantId ? `${productUrl}/public/category/tree?merchantId=${merchantId}` : `${productUrl}/public/category/tree`;
         const response = await apiClient.get(url);
         return response.data;
     },
