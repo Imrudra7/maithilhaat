@@ -1,98 +1,82 @@
-import { MaithilResponse } from "@/types/common";
+// src/lib/services/cart-service.ts
 
-export interface AddCartItemRequest {
-    productId: string;
-    variantId?: string;
-    quantity: number;
-    packSize?: string | number;
-    uom?: string;
-}
+import apiClient from '../api-client';
+import { MaithilResponse } from '@/types/common';
+import {
+    AddCartItemRequest,
+    UpdateCartItemRequest,
+    CartResponse
+} from '@/types/cart';
+import { toast } from 'sonner';
 
-export interface UpdateCartItemRequest {
-    cartItemId: string;
-    quantity?: number;
-    packSize?: string | number;
-    uom?: string;
-}
-
-export interface CartItemResponse {
-    cartItemId: string;
-    productId: string;
-    variantId?: string;
-    quantity: number;
-    packSize?: string | number;
-    uom?: string;
-    unitPrice?: string;
-    discountedPrice?: string;
-    value?: string;
-}
-
-export interface CartResponse {
-    cartId: string;
-    status?: string;
-    items?: CartItemResponse[];
-    itemTotalAmount?: string;
-    discountedItemTotalAmount?: string;
-    handlingFee?: string;
-    deliveryPartnerFee?: string;
-    platformFee?: string;
-    toPay?: string;
-}
-
-
-
-const CART_API_BASE = '/cart/api';
-
-async function request<T>(path: string, options: RequestInit = {}): Promise<MaithilResponse<T>> {
-    const response = await fetch(path, {
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-            ...(options.headers ?? {}),
-        },
-        ...options,
-    });
-
-    if (!response.ok) {
-        const body = await response.json().catch(() => undefined);
-        const errorMessage = body?.message ?? response.statusText;
-        throw new Error(errorMessage);
-    }
-
-    return response.json();
-}
+const cartUrl = '/cart/api';
 
 export const cartService = {
-    getCart(): Promise<MaithilResponse<CartResponse>> {
-        return request<CartResponse>(CART_API_BASE, {
-            method: 'GET',
-        });
+
+    getCart: async (): Promise<CartResponse> => {
+
+        const response =
+            await apiClient.get<MaithilResponse<CartResponse>>(cartUrl);
+
+        return response.data.data;
     },
 
-    addToCart(requestBody: AddCartItemRequest): Promise<MaithilResponse<CartResponse>> {
-        return request<CartResponse>(CART_API_BASE, {
-            method: 'POST',
-            body: JSON.stringify(requestBody),
-        });
+    addToCart: async (
+        requestBody: AddCartItemRequest
+    ): Promise<CartResponse> => {
+
+        const response =
+            await apiClient.post<MaithilResponse<CartResponse>>(
+                cartUrl,
+                requestBody
+            );
+
+        toast.success(response.data.message);
+
+        return response.data.data;
     },
 
-    updateCart(requestBody: UpdateCartItemRequest): Promise<MaithilResponse<CartResponse>> {
-        return request<CartResponse>(CART_API_BASE, {
-            method: 'PATCH',
-            body: JSON.stringify(requestBody),
-        });
+    updateCart: async (
+        requestBody: UpdateCartItemRequest
+    ): Promise<CartResponse> => {
+
+        const response =
+            await apiClient.patch<MaithilResponse<CartResponse>>(
+                cartUrl,
+                requestBody
+            );
+
+        toast.success(response.data.message);
+
+        return response.data.data;
     },
 
-    deleteItem(requestBody: UpdateCartItemRequest): Promise<MaithilResponse<CartResponse>> {
-        return request<CartResponse>(`${CART_API_BASE}/item`, {
-            method: 'DELETE',
-            body: JSON.stringify(requestBody),
-        });
+    deleteItem: async (
+        requestBody: UpdateCartItemRequest
+    ): Promise<CartResponse> => {
+
+        const response =
+            await apiClient.delete<MaithilResponse<CartResponse>>(
+                `${cartUrl}/item`,
+                {
+                    data: requestBody
+                }
+            );
+
+        toast.success(response.data.message);
+
+        return response.data.data;
     },
 
-    clearCart(): Promise<MaithilResponse<CartResponse>> {
-        return request<CartResponse>(`${CART_API_BASE}/all`, {
-            method: 'DELETE',
-        });
-    },
+    clearCart: async (): Promise<CartResponse> => {
+
+        const response =
+            await apiClient.delete<MaithilResponse<CartResponse>>(
+                `${cartUrl}/all`
+            );
+
+        toast.success(response.data.message);
+
+        return response.data.data;
+    }
 };

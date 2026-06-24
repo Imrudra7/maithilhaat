@@ -10,12 +10,14 @@ import { Label } from "@/components/ui/label";
 import { productService } from '@/lib/services/product-service';
 import { ProductResponse, ProductVariantResponse } from '@/types/product';
 import { toast } from 'sonner';
+import { cartService } from '@/lib/services/cart-service';
 
 export default function ProductPage() {
   const { slug } = useParams();
   const [product, setProduct] = useState<ProductResponse | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariantResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   // 1. Fetch Product Data on Load
   useEffect(() => {
@@ -39,6 +41,40 @@ export default function ProductPage() {
     if (slug) fetchProduct();
   }, [slug]);
 
+  const handleAddToCart = async () => {
+
+    if (!product || !selectedVariant) {
+
+      toast.error('Pehle ek variant chuniye.');
+      return;
+    }
+
+    try {
+
+      setIsAddingToCart(true);
+
+      const response = await cartService.addToCart({
+        productId: product.id,
+        variantId: selectedVariant.id,
+        quantity: 1,
+      });
+
+    } catch (error: any) {
+
+      console.error('Add to cart error:', error);
+
+      toast.error(
+        error?.response?.data?.message ??
+        error?.message ??
+        'Add to Haat mein fail hua.'
+      );
+
+    } finally {
+
+      setIsAddingToCart(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -57,19 +93,21 @@ export default function ProductPage() {
   }
 
   // Discount Calculate karne ke liye helper
-  const discount = selectedVariant 
-    ? Math.round(((selectedVariant.price - selectedVariant.salePrice) / selectedVariant.price) * 100) 
+  const discount = selectedVariant
+    ? Math.round(((selectedVariant.price - selectedVariant.salePrice) / selectedVariant.price) * 100)
     : 0;
+
+  const isAddToCartDisabled = !selectedVariant || selectedVariant.stockQuantity === 0 || isAddingToCart;
 
   return (
     <div className="container mx-auto px-4 py-10">
       <div className="flex flex-col lg:flex-row gap-12">
-        
+
         {/* 1. Left Column: Image Gallery */}
         <div className="flex-1 space-y-4">
           <div className="aspect-square rounded-3xl overflow-hidden bg-slate-100 border border-slate-100 shadow-inner">
-            <img 
-              src={product.imageUrl || "https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3"} 
+            <img
+              src={product.imageUrl || "https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3"}
               alt={product.name}
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
             />
@@ -80,22 +118,22 @@ export default function ProductPage() {
         <div className="flex-1 space-y-8">
           <div className="space-y-2">
             <div className="flex gap-2">
-               <Badge variant="secondary" className="font-bold text-primary bg-primary/10 tracking-tight">
-                 {product.type === 'PHYSICAL' ? 'Authentic Handmade' : product.type}
-               </Badge>
-               {selectedVariant && selectedVariant.stockQuantity < 5 && (
-                 <Badge variant="destructive" className="animate-pulse">Only {selectedVariant.stockQuantity} left!</Badge>
-               )}
+              <Badge variant="secondary" className="font-bold text-primary bg-primary/10 tracking-tight">
+                {product.type === 'PHYSICAL' ? 'Authentic Handmade' : product.type}
+              </Badge>
+              {selectedVariant && selectedVariant.stockQuantity < 5 && (
+                <Badge variant="destructive" className="animate-pulse">Only {selectedVariant.stockQuantity} left!</Badge>
+              )}
             </div>
             <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-slate-900 leading-none">
               {product.name}
             </h1>
             <div className="flex items-center gap-4">
-               <div className="flex items-center gap-1 bg-green-50 px-2 py-1 rounded-lg border border-green-100">
-                  <Star size={16} className="fill-green-600 text-green-600" />
-                  <span className="text-sm font-bold text-green-700">4.9</span>
-               </div>
-               <span className="text-sm text-slate-400 font-medium tracking-tight">Artist: {product.attributes.artist || 'Maithil Haat Artisans'}</span>
+              <div className="flex items-center gap-1 bg-green-50 px-2 py-1 rounded-lg border border-green-100">
+                <Star size={16} className="fill-green-600 text-green-600" />
+                <span className="text-sm font-bold text-green-700">4.9</span>
+              </div>
+              <span className="text-sm text-slate-400 font-medium tracking-tight">Artist: {product.attributes.artist || 'Maithil Haat Artisans'}</span>
             </div>
           </div>
 
@@ -121,8 +159,8 @@ export default function ProductPage() {
           <div className="space-y-4 border-t border-b py-6">
             <div className="space-y-3">
               <Label className="text-sm font-black uppercase tracking-widest text-slate-500">Choose Option</Label>
-              <RadioGroup 
-                value={selectedVariant?.id} 
+              <RadioGroup
+                value={selectedVariant?.id}
                 onValueChange={(val) => setSelectedVariant(product.variants.find(v => v.id === val) || null)}
                 className="flex flex-wrap gap-4"
               >
@@ -147,13 +185,21 @@ export default function ProductPage() {
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button 
-              size="lg" 
+            <Button
+              type="button"
+              size="lg"
               className="flex-1 h-14 rounded-2xl font-black text-lg gap-3 shadow-2xl shadow-primary/30 transition-all active:scale-95"
-              disabled={selectedVariant?.stockQuantity === 0}
+              onClick={handleAddToCart}
+              disabled={isAddToCartDisabled}
             >
-              <ShoppingBag size={20} />
-              {selectedVariant?.stockQuantity === 0 ? 'Out of Stock' : 'Add to Haat'}
+              {isAddingToCart ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShoppingBag size={20} />}
+              {!selectedVariant
+                ? 'Select Option'
+                : selectedVariant.stockQuantity === 0
+                  ? 'Out of Stock'
+                  : isAddingToCart
+                    ? 'Adding...'
+                    : 'Add to Haat'}
             </Button>
             <Button size="lg" variant="outline" className="h-14 w-14 rounded-2xl border-2 hover:bg-red-50 hover:border-red-200 group">
               <Heart size={24} className="text-slate-400 group-hover:text-red-500 transition-colors" />
@@ -162,12 +208,12 @@ export default function ProductPage() {
 
           {/* Product Highlights (Attributes) */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-6 py-4 bg-slate-50/50 rounded-3xl px-6 border border-slate-100">
-             {Object.entries(product.attributes).map(([key, value]) => (
-               <div key={key}>
-                 <p className="text-[10px] uppercase font-black text-slate-400 tracking-tighter">{key}</p>
-                 <p className="font-bold text-xs text-slate-700 capitalize">{String(value)}</p>
-               </div>
-             ))}
+            {Object.entries(product.attributes).map(([key, value]) => (
+              <div key={key}>
+                <p className="text-[10px] uppercase font-black text-slate-400 tracking-tighter">{key}</p>
+                <p className="font-bold text-xs text-slate-700 capitalize">{String(value)}</p>
+              </div>
+            ))}
           </div>
 
           {/* Trust Badges */}

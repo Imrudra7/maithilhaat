@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
+import { cartService } from '@/lib/services/cart-service';
 
 export default function CartPage() {
     // Mock Cart Items (Based on your Product/Variant structure)
@@ -22,10 +23,21 @@ export default function CartPage() {
         }
     ]);
 
-    const updateQuantity = (id: string, delta: number) => {
-        setItems(items.map(item =>
-            item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
+    const updateQuantity = async (id: string, delta: number) => {
+        const targetItem = items.find(item => item.id === id);
+        if (!targetItem) return;
+
+        const quantity = Math.max(1, targetItem.quantity + delta);
+        await cartService.updateCart({ cartItemId: id, quantity }); // Assuming updateCart is a method in cartService
+
+        setItems(prevItems => prevItems.map(item =>
+            item.id === id ? { ...item, quantity } : item
         ));
+    };
+
+    const removeItem = async (id: string) => {
+        await cartService.deleteItem({ cartItemId: id }); 
+        setItems(prevItems => prevItems.filter(item => item.id !== id));
     };
 
     const subtotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
@@ -52,7 +64,10 @@ export default function CartPage() {
                                         <h3 className="font-bold text-slate-900 md:text-lg leading-tight">{item.name}</h3>
                                         <p className="text-xs font-bold text-primary uppercase mt-1 tracking-wider">{item.variant}</p>
                                     </div>
-                                    <button className="text-slate-300 hover:text-red-500 transition-colors">
+                                    <button
+                                        onClick={() => removeItem(item.id)}
+                                        className="text-slate-300 hover:text-red-500 transition-colors"
+                                    >
                                         <Trash2 size={20} />
                                     </button>
                                 </div>
