@@ -1,57 +1,154 @@
 // src/app/checkout/page.tsx
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { CheckCircle2, MapPin, CreditCard, Truck, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import {
+    CheckCircle2,
+    MapPin,
+    CreditCard,
+    Truck,
+    ChevronRight,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Separator } from '@/components/ui/separator';
+import { Separator } from "@/components/ui/separator";
+import React, { useEffect, useState } from "react";
+import { CartResponse } from "@/types/cart";
+import { cartService } from "@/lib/services/cart-service";
 
 export default function CheckoutPage() {
     const [step, setStep] = useState(1); // 1: Address, 2: Payment
+    const [cart, setCart] = useState<CartResponse | null>(null);
+    const [loading, setLoading] = useState(true);
 
+    useEffect(() => {
+        const loadCart = async () => {
+            setLoading(true);
+            try {
+                const response = await cartService.getCart();
+                setCart(response);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadCart();
+    }, []);
+    if (loading) {
+        return (
+            <div className="container mx-auto px-4 py-10">
+                Loading...
+            </div>
+        );
+    }
+    const itemsCount =
+        cart?.items?.length ?? 0;
+
+    const subtotal =
+        Number(cart?.itemTotalAmount ?? 0);
+
+    const discountedSubtotal =
+        Number(cart?.discountedItemTotalAmount ?? 0);
+
+    const handlingFee =
+        Number(cart?.handlingFee ?? 0);
+
+    const deliveryFee =
+        Number(cart?.deliveryPartnerFee ?? 0);
+
+    const platformFee =
+        Number(cart?.platformFee ?? 0);
+
+    const totalPayable =
+        Number(cart?.toPay ?? 0);
+
+    const savings =
+        subtotal - discountedSubtotal;
     return (
         <div className="container mx-auto px-4 py-10 max-w-5xl">
             <div className="flex flex-col lg:flex-row gap-12">
-
                 {/* LEFT: Checkout Steps */}
                 <div className="flex-1 space-y-8">
-
                     {/* STEP 1: Shipping Address */}
-                    <section className={`p-6 rounded-3xl border-2 transition-all ${step === 1 ? 'border-primary bg-white shadow-xl' : 'border-slate-100 opacity-60'}`}>
+                    <section
+                        className={`p-6 rounded-3xl border-2 transition-all ${step === 1 ? "border-primary bg-white shadow-xl" : "border-slate-100 opacity-60"}`}
+                    >
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${step >= 1 ? 'bg-primary text-white' : 'bg-slate-200'}`}>1</div>
-                                <h2 className="text-xl font-black tracking-tight">Shipping Address</h2>
+                                <div
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${step >= 1 ? "bg-primary text-white" : "bg-slate-200"}`}
+                                >
+                                    1
+                                </div>
+                                <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
+                                    <MapPin className="h-4 w-4 text-primary" aria-hidden="true" />
+                                    <span>Shipping Address</span>
+                                </h2>
                             </div>
-                            {step > 1 && <Button variant="ghost" onClick={() => setStep(1)} className="text-primary font-bold">Edit</Button>}
+                            {step > 1 && (
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => setStep(1)}
+                                    className="text-primary font-bold"
+                                >
+                                    Edit
+                                </Button>
+                            )}
                         </div>
 
                         {step === 1 && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-2">
                                 <div className="space-y-2">
-                                    <Label className="font-bold text-xs uppercase tracking-wider">Full Name</Label>
-                                    <Input placeholder="Enter your name" className="rounded-xl border-slate-200 h-12" />
+                                    <Label className="font-bold text-xs uppercase tracking-wider">
+                                        Full Name
+                                    </Label>
+                                    <Input
+                                        placeholder="Enter your name"
+                                        className="rounded-xl border-slate-200 h-12"
+                                    />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="font-bold text-xs uppercase tracking-wider">Phone Number</Label>
-                                    <Input placeholder="10-digit mobile number" className="rounded-xl border-slate-200 h-12" />
+                                    <Label className="font-bold text-xs uppercase tracking-wider">
+                                        Phone Number
+                                    </Label>
+                                    <Input
+                                        placeholder="10-digit mobile number"
+                                        className="rounded-xl border-slate-200 h-12"
+                                    />
                                 </div>
                                 <div className="md:col-span-2 space-y-2">
-                                    <Label className="font-bold text-xs uppercase tracking-wider">Street Address / Landmark</Label>
-                                    <Input placeholder="House No, Street, Area" className="rounded-xl border-slate-200 h-12" />
+                                    <Label className="font-bold text-xs uppercase tracking-wider">
+                                        Street Address / Landmark
+                                    </Label>
+                                    <Input
+                                        placeholder="House No, Street, Area"
+                                        className="rounded-xl border-slate-200 h-12"
+                                    />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="font-bold text-xs uppercase tracking-wider">Pincode</Label>
-                                    <Input placeholder="6-digit code" className="rounded-xl border-slate-200 h-12" />
+                                    <Label className="font-bold text-xs uppercase tracking-wider">
+                                        Pincode
+                                    </Label>
+                                    <Input
+                                        placeholder="6-digit code"
+                                        className="rounded-xl border-slate-200 h-12"
+                                    />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="font-bold text-xs uppercase tracking-wider">City</Label>
-                                    <Input placeholder="City name" className="rounded-xl border-slate-200 h-12" />
+                                    <Label className="font-bold text-xs uppercase tracking-wider">
+                                        City
+                                    </Label>
+                                    <Input
+                                        placeholder="City name"
+                                        className="rounded-xl border-slate-200 h-12"
+                                    />
                                 </div>
-                                <Button onClick={() => setStep(2)} className="md:col-span-2 h-14 rounded-2xl font-black text-lg mt-4">
+                                <Button
+                                    onClick={() => setStep(2)}
+                                    className="md:col-span-2 h-14 rounded-2xl font-black text-lg mt-4"
+                                >
                                     Deliver to this Address
                                 </Button>
                             </div>
@@ -59,10 +156,18 @@ export default function CheckoutPage() {
                     </section>
 
                     {/* STEP 2: Payment Method */}
-                    <section className={`p-6 rounded-3xl border-2 transition-all ${step === 2 ? 'border-primary bg-white shadow-xl' : 'border-slate-100 opacity-60'}`}>
+                    <section
+                        className={`p-6 rounded-3xl border-2 transition-all ${step === 2 ? "border-primary bg-white shadow-xl" : "border-slate-100 opacity-60"}`}
+                    >
                         <div className="flex items-center gap-3 mb-6">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${step === 2 ? 'bg-primary text-white' : 'bg-slate-200'}`}>2</div>
-                            <h2 className="text-xl font-black tracking-tight">Payment Method</h2>
+                            <div
+                                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${step === 2 ? "bg-primary text-white" : "bg-slate-200"}`}
+                            >
+                                2
+                            </div>
+                            <h2 className="text-xl font-black tracking-tight">
+                                Payment Method
+                            </h2>
                         </div>
 
                         {step === 2 && (
@@ -71,21 +176,39 @@ export default function CheckoutPage() {
                                     <Label className="flex items-center justify-between p-4 border-2 rounded-2xl cursor-pointer hover:border-primary transition-all has-[:checked]:border-primary has-[:checked]:bg-primary/5">
                                         <div className="flex items-center gap-3">
                                             <RadioGroupItem value="upi" id="upi" />
-                                            <span className="font-bold">UPI (PhonePe, Google Pay)</span>
+                                            <span className="font-bold">
+                                                UPI (PhonePe, Google Pay)
+                                            </span>
                                         </div>
-                                        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg" className="h-4" alt="UPI" />
+                                        <img
+                                            src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-vector.svg"
+                                            className="h-4"
+                                            alt="UPI"
+                                        />
+                                    </Label>
+                                    <Label className="flex items-center justify-between p-4 border-2 rounded-2xl cursor-pointer hover:border-primary transition-all has-[:checked]:border-primary has-[:checked]:bg-primary/5">
+                                        <div className="flex items-center gap-3">
+                                            <RadioGroupItem value="card" id="card" />
+                                            <span className="font-bold">
+                                                Card (Credit, Debit, ATM)
+                                            </span>
+                                        </div>
+                                        <CreditCard className="h-4" aria-label="Card" />
                                     </Label>
                                     <Label className="flex items-center justify-between p-4 border-2 rounded-2xl cursor-pointer hover:border-primary transition-all has-[:checked]:border-primary has-[:checked]:bg-primary/5">
                                         <div className="flex items-center gap-3">
                                             <RadioGroupItem value="cod" id="cod" />
                                             <span className="font-bold">Cash on Delivery</span>
                                         </div>
+                                        <Truck className="h-4" aria-label="Cash on Delivery" />
                                     </Label>
                                 </RadioGroup>
 
                                 <Button className="w-full h-14 rounded-2xl font-black text-lg shadow-xl shadow-primary/20">
+                                    <ChevronRight className="h-5 w-5 mr-2" aria-hidden="true" />
                                     Pay & Place Order
                                 </Button>
+
                             </div>
                         )}
                     </section>
@@ -94,25 +217,47 @@ export default function CheckoutPage() {
                 {/* RIGHT: Order Summary Sticky Card */}
                 <aside className="w-full lg:w-80 h-fit sticky top-28">
                     <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 space-y-4">
-                        <h3 className="font-black text-lg tracking-tight">Order Details</h3>
+                        <h3 className="font-black text-lg tracking-tight flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 text-green-600" aria-hidden="true" />
+                            <span>Order Details</span>
+                        </h3>
                         <div className="space-y-3">
+
                             <div className="flex justify-between text-sm font-bold text-slate-500">
-                                <span>Items (1)</span>
-                                <span>₹1,999</span>
+                                <span>Items ({itemsCount})</span>
+                                <span>₹{subtotal.toLocaleString()}</span>
                             </div>
+
                             <div className="flex justify-between text-sm font-bold text-green-600">
-                                <span>Shipping</span>
-                                <span>FREE</span>
+                                <span>Savings</span>
+                                <span>- ₹{savings.toLocaleString()}</span>
                             </div>
+
+                            <div className="flex justify-between text-sm font-bold text-slate-500">
+                                <span>Handling Fee</span>
+                                <span>₹{handlingFee.toLocaleString()}</span>
+                            </div>
+
+                            <div className="flex justify-between text-sm font-bold text-slate-500">
+                                <span>Delivery Fee</span>
+                                <span>₹{deliveryFee.toLocaleString()}</span>
+                            </div>
+
+                            <div className="flex justify-between text-sm font-bold text-slate-500">
+                                <span>Platform Fee</span>
+                                <span>₹{platformFee.toLocaleString()}</span>
+                            </div>
+
                             <Separator />
+
                             <div className="flex justify-between text-xl font-black pt-2">
                                 <span>Payable</span>
-                                <span>₹1,999</span>
+                                <span>₹{totalPayable.toLocaleString()}</span>
                             </div>
+
                         </div>
                     </div>
                 </aside>
-
             </div>
         </div>
     );

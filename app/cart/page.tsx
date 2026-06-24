@@ -28,7 +28,6 @@ export default function CartPage() {
       setLoading(true);
       try {
         const response = await cartService.getCart();
-
         setCart(response);
       } catch (error) {
         console.error(error);
@@ -36,7 +35,6 @@ export default function CartPage() {
         setLoading(false);
       }
     };
-
     loadCart();
   }, []);
 
