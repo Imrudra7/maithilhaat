@@ -1,5 +1,6 @@
 import { MaithilResponse } from "@/types/common";
 
+
 /* =========================
    Requests
 ========================= */
@@ -21,6 +22,9 @@ export interface UpdateCartItemRequest {
 ========================= */
 
 export interface CartItemResponse {
+    imageUrl: string | Blob | undefined;
+    productName: string | undefined;
+    variantLabel: string | undefined;
     cartItemId: string;
 
     productId: string;
