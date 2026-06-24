@@ -1,5 +1,6 @@
 // src/app/layout.tsx
 import { Inter } from "next/font/google";
+// @ts-ignore: CSS module declaration not found, handled by Next.js
 import "./globals.css";
 import Navbar from "@/components/navigation/Navbar";
 import Footer from "@/components/navigation/Footer";
@@ -15,13 +16,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* 🔥 AuthProvider ko sabse upar rakho taaki Navbar ko bhi access mile */}
         <AuthProvider>
           <Navbar />
-          
+
           <main className="relative flex flex-col min-h-screen">
             <div className="grow flex-1">
               {children}
             </div>
           </main>
-          
+
           <Footer />
           <Toaster position="top-center" richColors />
         </AuthProvider>
