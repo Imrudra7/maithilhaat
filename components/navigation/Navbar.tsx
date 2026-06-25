@@ -32,6 +32,18 @@ export default function Navbar() {
         }
     };
 
+    const handleProfileClick = () => {
+        router.push('/profile');
+    }
+
+    const handleOrdersClick = () => {
+        router.push('/orders');
+    }
+
+    const handleWishlistClick = () => {
+        router.push('/wishlist');
+    }
+
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             {/* Top Banner */}
@@ -55,7 +67,7 @@ export default function Navbar() {
 
                 {/* Right Actions */}
                 <div className="flex items-center gap-2 md:gap-4">
-                    
+
                     {isLoggedIn ? (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -73,24 +85,24 @@ export default function Navbar() {
                                     <ChevronDown size={14} className="text-muted-foreground hidden md:block" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            
+
                             <DropdownMenuContent className="w-56 mt-2 rounded-2xl p-2 shadow-2xl border-slate-100" align="end">
                                 <DropdownMenuLabel className="px-3 py-2">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mera Account</p>
                                     <p className="text-xs font-bold text-slate-700 truncate">{user?.email}</p>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="rounded-xl cursor-pointer font-bold gap-2 py-2.5">
+                                <DropdownMenuItem onClick={handleProfileClick} className="rounded-xl cursor-pointer font-bold gap-2 py-2.5">
                                     <User size={16} className="text-slate-500" /> My Profile
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className="rounded-xl cursor-pointer font-bold gap-2 py-2.5">
+                                <DropdownMenuItem onClick={handleOrdersClick} className="rounded-xl cursor-pointer font-bold gap-2 py-2.5">
                                     <Package size={16} className="text-slate-500" /> My Orders
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className="rounded-xl cursor-pointer font-bold gap-2 py-2.5">
+                                <DropdownMenuItem onClick={handleWishlistClick} className="rounded-xl cursor-pointer font-bold gap-2 py-2.5">
                                     <Heart size={16} className="text-slate-500" /> Wishlist
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                     onClick={handleLogoutClick}
                                     className="rounded-xl cursor-pointer font-black gap-2 py-2.5 text-red-500 focus:text-red-500 focus:bg-red-50"
                                 >
