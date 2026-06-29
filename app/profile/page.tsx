@@ -154,8 +154,9 @@ export default function ProfilePage() {
                     <div className="flex-1 mb-1">
                         {isEditing ? (
                             <div className="max-w-xs mt-4 sm:mt-0">
-                                <label className="text-xs font-semibold text-gray-400 block mb-1 text-left">FULL NAME</label>
+                                <label htmlFor="fullName" className="text-xs font-semibold text-gray-400 block mb-1 text-left">FULL NAME</label>
                                 <input 
+                                    id="fullName"
                                     type="text" 
                                     value={fullName} 
                                     onChange={(e) => setFullName(e.target.value)}

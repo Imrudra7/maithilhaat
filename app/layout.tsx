@@ -6,10 +6,15 @@ import Navbar from "@/components/navigation/Navbar";
 import Footer from "@/components/navigation/Footer";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/context/AuthContext";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body className={`${inter.className} min-h-screen bg-background`}>
@@ -18,14 +23,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Navbar />
 
           <main className="relative flex flex-col min-h-screen">
-            <div className="grow flex-1">
-              {children}
-            </div>
+            <div className="grow flex-1">{children}</div>
           </main>
 
           <Footer />
           <Toaster position="top-center" richColors />
         </AuthProvider>
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="beforeInteractive"
+        />
       </body>
     </html>
   );
