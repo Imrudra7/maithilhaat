@@ -1,14 +1,16 @@
 // src/types/product.ts
 
 export type ProductType = 'PHYSICAL' | 'SERVICE' | 'DIGITAL';
+export type ProductAttributeValue = string | number | boolean | null;
 
 export interface ProductVariantResponse {
   id: string;
-  skuCode: string;
+  skuCode: string | null;
   price: number;
   salePrice: number;
   stockQuantity: number;
-  variantAttributes: Record<string, any>;
+  variantAttributes: Record<string, ProductAttributeValue>;
+  active?: boolean;
   isActive: boolean;
 }
 
@@ -20,8 +22,9 @@ export interface ProductResponse {
   categoryId: string;
   merchantId: string;
   type: ProductType;
-  attributes: Record<string, any>;
+  attributes: Record<string, ProductAttributeValue>;
   imageUrl: string;
+  active?: boolean;
   isActive: boolean;
   createdAt: string;
   variants: ProductVariantResponse[];
@@ -55,11 +58,12 @@ export interface ProductResponse {
   categoryId: string;
   merchantId: string;
   type: ProductType;
-  attributes: Record<string, any>;
+  attributes: Record<string, ProductAttributeValue>;
   imageUrl: string;
+  active?: boolean;
   isActive: boolean;
   createdAt: string;
-  updatedAt: string; // 👈 Ye line add karo
+  updatedAt?: string;
   variants: ProductVariantResponse[];
 }
 

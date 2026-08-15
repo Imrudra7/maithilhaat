@@ -2,15 +2,30 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Star, ShoppingBag, Heart, ShieldCheck, Truck, RotateCcw, Loader2 } from 'lucide-react';
+import { Heart, Loader2, Palette, RotateCcw, ShieldCheck, ShoppingBag, Star, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { productService } from '@/lib/services/product-service';
 import { ProductResponse, ProductVariantResponse } from '@/types/product';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 import { cartService } from '@/lib/services/cart-service';
+
+const fallbackImage = '/images/maithil-art-gallery-hero.png';
+
+function getApiMessage(error: unknown, fallback: string) {
+  if (error && typeof error === 'object' && 'response' in error) {
+    const response = (error as { response?: { data?: { message?: string } } }).response;
+    return response?.data?.message || fallback;
+  }
+
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String((error as { message?: string }).message || fallback);
+  }
+
+  return fallback;
+}
 
 export default function ProductPage() {
   const { slug } = useParams();
@@ -19,20 +34,18 @@ export default function ProductPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-  // 1. Fetch Product Data on Load
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setIsLoading(true);
         const data = await productService.getProductBySlug(slug as string);
         setProduct(data);
-        // Default: Pehla variant select kar lo
         if (data.variants && data.variants.length > 0) {
-          setSelectedVariant(data.variants[0]);
+          setSelectedVariant(data.variants.find((variant) => variant.isActive) ?? data.variants[0]);
         }
       } catch (error) {
-        console.error("Product fetch error:", error);
-        toast.error("Bhai, painting load nahi ho payi!");
+        console.error('Product fetch error:', error);
+        notify.error('Artwork could not be loaded.');
       } finally {
         setIsLoading(false);
       }
@@ -42,35 +55,22 @@ export default function ProductPage() {
   }, [slug]);
 
   const handleAddToCart = async () => {
-
     if (!product || !selectedVariant) {
-
-      toast.error('Pehle ek variant chuniye.');
+      notify.warning('Please choose an option first.');
       return;
     }
 
     try {
-
       setIsAddingToCart(true);
-
-      const response = await cartService.addToCart({
+      await cartService.addToCart({
         productId: product.id,
         variantId: selectedVariant.id,
         quantity: 1,
       });
-
-    } catch (error: any) {
-
+    } catch (error: unknown) {
       console.error('Add to cart error:', error);
-
-      toast.error(
-        error?.response?.data?.message ??
-        error?.message ??
-        'Add to Haat mein fail hua.'
-      );
-
+      notify.error(getApiMessage(error, 'Could not add this piece to your bag.'));
     } finally {
-
       setIsAddingToCart(false);
     }
   };
@@ -86,148 +86,157 @@ export default function ProductPage() {
   if (!product) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
-        <h2 className="text-2xl font-bold">Painting nahi mili!</h2>
-        <Button onClick={() => window.history.back()}>Wapas Chalein</Button>
+        <h2 className="text-2xl font-black">Artwork not found</h2>
+        <Button onClick={() => window.history.back()}>Go Back</Button>
       </div>
     );
   }
 
-  // Discount Calculate karne ke liye helper
-  const discount = selectedVariant
+  const discount = selectedVariant && selectedVariant.price > selectedVariant.salePrice
     ? Math.round(((selectedVariant.price - selectedVariant.salePrice) / selectedVariant.price) * 100)
     : 0;
-
   const isAddToCartDisabled = !selectedVariant || selectedVariant.stockQuantity === 0 || isAddingToCart;
+  const artist = product.attributes.artist || product.attributes.origin || 'Maithil Haat Artisans';
 
   return (
-    <div className="container mx-auto px-4 py-10">
-      <div className="flex flex-col lg:flex-row gap-12">
+    <div className="mh-fade-up container mx-auto px-4 py-8 md:py-12">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.04fr)_minmax(340px,0.96fr)] lg:gap-14">
+        <div className="space-y-4">
+          <div className="mh-card-hover relative overflow-hidden rounded-[2rem] border border-stone-200 bg-white p-3 shadow-2xl shadow-stone-900/10">
+            <div className="aspect-square overflow-hidden rounded-[1.5rem] bg-stone-100">
+              <img
+                src={product.imageUrl || fallbackImage}
+                alt={product.name}
+                className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+              />
+            </div>
+          </div>
 
-        {/* 1. Left Column: Image Gallery */}
-        <div className="flex-1 space-y-4">
-          <div className="aspect-square rounded-3xl overflow-hidden bg-slate-100 border border-slate-100 shadow-inner">
-            <img
-              src={product.imageUrl || "https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3"}
-              alt={product.name}
-              className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-            />
+          <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-3">
+            {[
+              { icon: ShieldCheck, text: 'Secure checkout' },
+              { icon: Truck, text: 'Careful delivery' },
+              { icon: RotateCcw, text: 'Easy support' },
+            ].map((item) => (
+              <div key={item.text} className="mh-card-hover rounded-2xl border border-stone-200 bg-white/80 p-4 text-center shadow-sm">
+                <item.icon className="mh-icon-glow mx-auto h-5 w-5 text-primary" />
+                <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-stone-500">{item.text}</p>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* 2. Right Column: Details */}
-        <div className="flex-1 space-y-8">
-          <div className="space-y-2">
-            <div className="flex gap-2">
-              <Badge variant="secondary" className="font-bold text-primary bg-primary/10 tracking-tight">
+        <div className="lg:sticky lg:top-32 lg:self-start">
+          <div className="mh-fade-up-delay-1 art-panel rounded-[2rem] p-4 sm:p-6 md:p-8">
+            <div className="mb-4 flex flex-wrap gap-2">
+              <Badge variant="secondary" className="bg-primary/10 text-primary font-black">
                 {product.type === 'PHYSICAL' ? 'Authentic Handmade' : product.type}
               </Badge>
-              {selectedVariant && selectedVariant.stockQuantity < 5 && (
-                <Badge variant="destructive" className="animate-pulse">Only {selectedVariant.stockQuantity} left!</Badge>
+              {selectedVariant && selectedVariant.stockQuantity < 5 && selectedVariant.stockQuantity > 0 && (
+                <Badge variant="destructive" className="font-black">Only {selectedVariant.stockQuantity} left</Badge>
               )}
             </div>
-            <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-slate-900 leading-none">
-              {product.name}
-            </h1>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1 bg-green-50 px-2 py-1 rounded-lg border border-green-100">
-                <Star size={16} className="fill-green-600 text-green-600" />
-                <span className="text-sm font-bold text-green-700">4.9</span>
+
+            <div className="space-y-4">
+              <div>
+                <p className="museum-label">Artwork Detail</p>
+                <h1 className="mt-2 text-3xl font-black leading-tight tracking-tight text-stone-950 md:text-6xl">
+                  {product.name}
+                </h1>
               </div>
-              <span className="text-sm text-slate-400 font-medium tracking-tight">Artist: {product.attributes.artist || 'Maithil Haat Artisans'}</span>
-            </div>
-          </div>
 
-          {/* Pricing Logic */}
-          <div className="space-y-1">
-            <div className="flex items-baseline gap-3">
-              <span className="text-4xl font-black text-slate-900">₹{selectedVariant?.salePrice}</span>
-              {discount > 0 && (
-                <>
-                  <span className="text-lg text-slate-400 line-through font-medium">₹{selectedVariant?.price}</span>
-                  <Badge className="bg-red-600 font-bold border-none">{discount}% OFF</Badge>
-                </>
-              )}
-            </div>
-            <p className="text-[10px] text-slate-400 font-black tracking-widest uppercase italic">Hurry! Prices may change</p>
-          </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-1 rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-1.5">
+                  <Star size={16} className="fill-emerald-600 text-emerald-600" />
+                  <span className="text-sm font-black text-emerald-700">4.9</span>
+                </div>
+                <span className="text-sm font-bold text-stone-500">Artist: {String(artist)}</span>
+              </div>
 
-          <p className="text-slate-600 leading-relaxed font-medium">
-            {product.description}
-          </p>
+              <div className="mh-card-hover rounded-2xl bg-stone-50 p-5">
+                <div className="flex flex-wrap items-baseline gap-3">
+                  <span className="text-3xl font-black text-stone-950 sm:text-4xl">Rs {selectedVariant?.salePrice.toLocaleString()}</span>
+                  {discount > 0 && (
+                    <>
+                      <span className="text-lg text-stone-400 line-through font-bold">Rs {selectedVariant?.price.toLocaleString()}</span>
+                      <Badge className="bg-red-600 font-black border-none">{discount}% OFF</Badge>
+                    </>
+                  )}
+                </div>
+                <p className="mt-2 text-[11px] text-stone-400 font-black tracking-widest uppercase">Inclusive of taxes where applicable</p>
+              </div>
 
-          {/* Variant Selector: JSONB variantAttributes Mapping */}
-          <div className="space-y-4 border-t border-b py-6">
-            <div className="space-y-3">
-              <Label className="text-sm font-black uppercase tracking-widest text-slate-500">Choose Option</Label>
-              <RadioGroup
-                value={selectedVariant?.id}
-                onValueChange={(val) => setSelectedVariant(product.variants.find(v => v.id === val) || null)}
-                className="flex flex-wrap gap-4"
-              >
-                {product.variants.map((variant) => {
-                  // JSONB se label nikal rahe hain (e.g. size)
-                  const variantLabel = Object.values(variant.variantAttributes).join(" / ");
-                  return (
-                    <div key={variant.id} className="flex items-center">
-                      <RadioGroupItem value={variant.id} id={variant.id} className="peer sr-only" />
-                      <Label
-                        htmlFor={variant.id}
-                        className="px-5 py-3 border-2 rounded-2xl font-bold cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 peer-data-[state=checked]:text-primary transition-all hover:bg-slate-50"
-                      >
-                        {variantLabel}
-                      </Label>
+              <p className="text-base font-medium leading-8 text-stone-600">
+                {product.description}
+              </p>
+
+              <div className="space-y-4 border-y border-stone-200 py-6">
+                <Label className="text-sm font-black uppercase tracking-widest text-stone-500">Choose Option</Label>
+                <RadioGroup
+                  value={selectedVariant?.id}
+                  onValueChange={(val) => setSelectedVariant(product.variants.find((variant) => variant.id === val) || null)}
+                  className="flex flex-wrap gap-3"
+                >
+                  {product.variants.map((variant) => {
+                    const variantLabel = Object.values(variant.variantAttributes).join(' / ') || variant.skuCode;
+                    return (
+                      <div key={variant.id} className="flex items-center">
+                        <RadioGroupItem value={variant.id} id={variant.id} className="peer sr-only" />
+                        <Label
+                          htmlFor={variant.id}
+                          className="mh-press cursor-pointer break-words rounded-2xl border-2 border-stone-200 bg-white px-4 py-3 text-sm font-black transition-all hover:bg-stone-50 peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:text-primary sm:px-5"
+                        >
+                          {variantLabel}
+                        </Label>
+                      </div>
+                    );
+                  })}
+                </RadioGroup>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button
+                  type="button"
+                  size="lg"
+                  className="mh-press mh-shine h-14 flex-1 rounded-2xl text-lg font-black gap-3 shadow-2xl shadow-primary/25"
+                  onClick={handleAddToCart}
+                  disabled={isAddToCartDisabled}
+                >
+                  {isAddingToCart ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShoppingBag size={20} />}
+                  {!selectedVariant
+                    ? 'Select Option'
+                    : selectedVariant.stockQuantity === 0
+                      ? 'Out of Stock'
+                      : isAddingToCart
+                        ? 'Adding...'
+                        : 'Add to Haat'}
+                </Button>
+                <Button size="lg" variant="outline" className="mh-press h-14 rounded-2xl border-2 px-5 hover:bg-red-50 hover:border-red-200 group">
+                  <Heart size={22} className="text-stone-400 group-hover:text-red-500 transition-colors" />
+                </Button>
+              </div>
+
+              {Object.keys(product.attributes).length > 0 && (
+                <div className="grid grid-cols-1 gap-3 pt-2 min-[420px]:grid-cols-2 md:grid-cols-3">
+                  {Object.entries(product.attributes).map(([key, value]) => (
+                    <div key={key} className="mh-card-hover rounded-2xl border border-stone-200 bg-white p-4">
+                      <p className="text-[10px] uppercase font-black text-stone-400 tracking-widest">{key}</p>
+                      <p className="mt-1 text-xs font-black text-stone-700 capitalize">{String(value)}</p>
                     </div>
-                  );
-                })}
-              </RadioGroup>
+                  ))}
+                </div>
+              )}
+
+              <div className="rounded-2xl bg-[#2b1710] p-5 text-white">
+                <p className="flex items-center gap-2 text-sm font-black">
+                  <Palette className="h-4 w-4 text-amber-300" />
+                  Collected directly through MaithilHaat
+                </p>
+                <p className="mt-2 text-xs font-semibold leading-6 text-stone-300">
+                  Each order supports a craft-led marketplace and keeps artisan stories visible.
+                </p>
+              </div>
             </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button
-              type="button"
-              size="lg"
-              className="flex-1 h-14 rounded-2xl font-black text-lg gap-3 shadow-2xl shadow-primary/30 transition-all active:scale-95"
-              onClick={handleAddToCart}
-              disabled={isAddToCartDisabled}
-            >
-              {isAddingToCart ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShoppingBag size={20} />}
-              {!selectedVariant
-                ? 'Select Option'
-                : selectedVariant.stockQuantity === 0
-                  ? 'Out of Stock'
-                  : isAddingToCart
-                    ? 'Adding...'
-                    : 'Add to Haat'}
-            </Button>
-            <Button size="lg" variant="outline" className="h-14 w-14 rounded-2xl border-2 hover:bg-red-50 hover:border-red-200 group">
-              <Heart size={24} className="text-slate-400 group-hover:text-red-500 transition-colors" />
-            </Button>
-          </div>
-
-          {/* Product Highlights (Attributes) */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6 py-4 bg-slate-50/50 rounded-3xl px-6 border border-slate-100">
-            {Object.entries(product.attributes).map(([key, value]) => (
-              <div key={key}>
-                <p className="text-[10px] uppercase font-black text-slate-400 tracking-tighter">{key}</p>
-                <p className="font-bold text-xs text-slate-700 capitalize">{String(value)}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Trust Badges */}
-          <div className="grid grid-cols-3 gap-4 pt-4">
-            {[
-              { icon: ShieldCheck, text: "Secure Haat" },
-              { icon: Truck, text: "Fast Delivery" },
-              { icon: RotateCcw, text: "Easy Return" }
-            ].map((item, i) => (
-              <div key={i} className="flex flex-col items-center text-center gap-1">
-                <item.icon className="text-primary" size={20} />
-                <span className="text-[9px] font-black uppercase tracking-tight text-slate-500">{item.text}</span>
-              </div>
-            ))}
           </div>
         </div>
       </div>

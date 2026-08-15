@@ -1,5 +1,5 @@
 // src/lib/mock-data.ts
-import { ProductResponse as Product, CategoryResponse as Category } from "@/types/product";
+import { ProductResponse as Product } from "@/types/product";
 
 export const MOCK_PRODUCTS: Product[] = [
   {
@@ -10,7 +10,7 @@ export const MOCK_PRODUCTS: Product[] = [
     slug: "classic-madhubani-tree-of-life",
     description: "Authentic handmade painting on handmade paper using natural colors.",
     type: "PHYSICAL",
-    imageUrl: "https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?q=80&w=800",
+    imageUrl: "/images/maithil-art-gallery-hero.png",
     isActive: true,
     attributes: { material: "Handmade Paper", origin: "Madhubani, Bihar", theme: "Nature" },
     variants: [

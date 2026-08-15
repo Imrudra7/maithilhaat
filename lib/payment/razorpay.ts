@@ -1,13 +1,39 @@
-import { paymentService } from "@/lib/services/payment-service";
+import { PaymentResponse, paymentService } from "@/lib/services/payment-service";
+
+interface RazorpaySuccessResponse {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+}
+
+interface RazorpayOptions {
+    key: string;
+    amount: number;
+    currency: string;
+    order_id: string;
+    name: string;
+    description: string;
+    handler: (response: RazorpaySuccessResponse) => Promise<void>;
+    modal: {
+        ondismiss: () => void;
+    };
+    theme: {
+        color: string;
+    };
+}
+
+interface RazorpayInstance {
+    open: () => void;
+}
 
 declare global {
     interface Window {
-        Razorpay: any;
+        Razorpay: new (options: RazorpayOptions) => RazorpayInstance;
     }
 }
 
-export async function openRazorpay(payment: any, onSuccess: () => void) {
-    const options = {
+export async function openRazorpay(payment: PaymentResponse, onSuccess: () => void) {
+    const options: RazorpayOptions = {
         key: payment.razorpayKey,
 
         amount: payment.amount * 100,
@@ -20,7 +46,7 @@ export async function openRazorpay(payment: any, onSuccess: () => void) {
 
         description: "Order Payment",
 
-        handler: async function (response: any) {
+        handler: async function (response) {
             await paymentService.verifyPayment({
                 paymentId: payment.paymentId,
 
@@ -29,7 +55,7 @@ export async function openRazorpay(payment: any, onSuccess: () => void) {
                 providerPaymentId: response.razorpay_payment_id,
 
                 providerSignature: response.razorpay_signature,
-            });
+            }, crypto.randomUUID());
 
             onSuccess();
         },

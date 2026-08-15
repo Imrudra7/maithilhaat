@@ -19,13 +19,22 @@ import {
 import { Input } from "@/components/ui/input";
 import { authService } from '@/lib/services/auth-service';
 import { useAuth } from "@/context/AuthContext"; // 🔥 useAuth import kiya
-import { toast } from "sonner"
+import { notify } from "@/lib/notify";
 import { Loader2, LogIn } from 'lucide-react';
 
 const loginSchema = z.object({
     email: z.string().email({ message: "Bhai, sahi email toh daalo!" }),
     password: z.string().min(8, { message: "Password kam se kam 8 chars ka hona chahiye" }),
 });
+
+function getErrorMessage(error: unknown, fallback: string) {
+    if (error && typeof error === 'object' && 'response' in error) {
+        const response = (error as { response?: { data?: { message?: string } } }).response;
+        return response?.data?.message || fallback;
+    }
+
+    return fallback;
+}
 
 export default function LoginPage() {
     const router = useRouter();
@@ -55,7 +64,7 @@ export default function LoginPage() {
             // 🔥 Context update karo (Isse global state update ho jayegi)
             login(response); 
 
-            toast.success("Swagat hai bhai!", {
+            notify.success("Swagat hai bhai!", {
                 description: response.message || "Login safal raha.",
             });
 
@@ -65,9 +74,9 @@ export default function LoginPage() {
             } else {
                 router.replace('/'); 
             }
-        } catch (error: any) {
-            toast.error("Login Fail", {
-                description: error.response?.data?.message || "Check your credentials",
+        } catch (error: unknown) {
+            notify.error("Login Fail", {
+                description: getErrorMessage(error, "Check your credentials"),
             });
         } finally {
             setIsSubmitting(false);
@@ -84,8 +93,8 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="container relative min-h-screen flex flex-col items-center justify-center lg:px-0">
-            <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+        <div className="container relative flex min-h-screen flex-col items-center justify-center lg:px-0">
+            <div className="mh-fade-up mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
                 <div className="flex flex-col space-y-2 text-center">
                     <h1 className="text-3xl font-black tracking-tighter">MAITHIL HAAT</h1>
                     <p className="text-sm text-slate-500 font-bold uppercase tracking-widest">
@@ -93,7 +102,7 @@ export default function LoginPage() {
                     </p>
                 </div>
 
-                <div className="grid gap-6 bg-white p-8 rounded-3xl border border-slate-100 shadow-xl">
+                <div className="mh-card-hover grid gap-6 rounded-3xl border border-slate-100 bg-white p-8 shadow-xl">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                             <FormField
@@ -122,7 +131,7 @@ export default function LoginPage() {
                                     </FormItem>
                                 )}
                             />
-                            <Button type="submit" className="w-full h-12 rounded-xl font-bold text-lg" disabled={isSubmitting}>
+                            <Button type="submit" className="mh-press mh-shine w-full h-12 rounded-xl font-bold text-lg" disabled={isSubmitting}>
                                 {isSubmitting ? (
                                     <>
                                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -7,9 +7,24 @@ import {
     UpdateCartItemRequest,
     CartResponse
 } from '@/types/cart';
-import { toast } from 'sonner';
+import { notify } from '@/lib/notify';
 
 const cartUrl = '/cart/api';
+
+function getDistinctProductCount(cart: CartResponse): number {
+    return new Set((cart.items ?? []).map((item) => item.productId)).size;
+}
+
+function emitCartUpdated(cart: CartResponse) {
+    if (typeof window === 'undefined') return;
+
+    window.dispatchEvent(new CustomEvent('maithilhaat:cart-updated', {
+        detail: {
+            count: getDistinctProductCount(cart),
+            cart,
+        },
+    }));
+}
 
 export const cartService = {
 
@@ -31,7 +46,8 @@ export const cartService = {
                 requestBody
             );
 
-        toast.success(response.data.message);
+        notify.success(response.data.message);
+        emitCartUpdated(response.data.data);
 
         return response.data.data;
     },
@@ -46,7 +62,8 @@ export const cartService = {
                 requestBody
             );
 
-        toast.success(response.data.message);
+        notify.success(response.data.message);
+        emitCartUpdated(response.data.data);
 
         return response.data.data;
     },
@@ -63,7 +80,8 @@ export const cartService = {
                 }
             );
 
-        toast.success(response.data.message);
+        notify.success(response.data.message);
+        emitCartUpdated(response.data.data);
 
         return response.data.data;
     },
@@ -75,7 +93,8 @@ export const cartService = {
                 `${cartUrl}/all`
             );
 
-        toast.success(response.data.message);
+        notify.success(response.data.message);
+        emitCartUpdated(response.data.data);
 
         return response.data.data;
     }

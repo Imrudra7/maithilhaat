@@ -22,9 +22,16 @@ export interface UpdateCartItemRequest {
 ========================= */
 
 export interface CartItemResponse {
+    slug?: string;
+
+    productSlug?: string;
+
     imageUrl: string | Blob | undefined;
+
     productName: string | undefined;
+
     variantLabel: string | undefined;
+
     cartItemId: string;
 
     productId: string;

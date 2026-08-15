@@ -7,6 +7,10 @@ import {
     Truck,
     ChevronRight,
     Plus,
+    Loader2,
+    PackageCheck,
+    ShieldCheck,
+    Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +25,7 @@ import { userService } from "@/lib/services/user-service";
 import { paymentService } from "@/lib/services/payment-service";
 import { orderService } from "@/lib/services/order-service";
 import { openRazorpay } from "@/lib/payment/razorpay";
+import { notify } from "@/lib/notify";
 
 export default function CheckoutPage() {
     const router = useRouter();
@@ -78,7 +83,9 @@ export default function CheckoutPage() {
     // --- प्रोफाइल में नया पता जोड़ने का हैंडलर ---
     const handleAddNewAddress = async () => {
         if (!streetAddress || !city || !pincode) {
-            alert("कृपया पूरा पता भरें!");
+            notify.warning("Address incomplete", {
+                description: "Please fill street address, city and pincode before saving.",
+            });
             return;
         }
 
@@ -98,10 +105,14 @@ export default function CheckoutPage() {
             setSavedAddresses(updatedAddressesList);
             setSelectedAddress(formattedAddress);
             setShowNewAddressForm(false);
-            alert("नया एड्रेस प्रोफाइल में सेव हो गया है! 🎉");
+            notify.success("Address saved", {
+                description: "Your delivery address is ready for this order.",
+            });
         } catch (error) {
             console.error("Failed to save address to profile:", error);
-            alert("एड्रेस सेव करने में समस्या आई।");
+            notify.error("Address could not be saved", {
+                description: "Please check your details and try again.",
+            });
         } finally {
             setSubmitLoading(false);
         }
@@ -164,13 +175,17 @@ export default function CheckoutPage() {
                     orderId: order.orderId
                 }, paymentKey);
                 
-                alert("Order Placed Successfully via Cash on Delivery! 📦");
+                notify.success("Order placed", {
+                    description: "Cash on Delivery order has been created successfully.",
+                });
                 router.push(`/orders/${order.orderId}`);
             }
 
         } catch (error) {
             console.error("Error processing order:", error);
-            alert("आर्डर प्लेस करने में विफलता आई। कृपया पुनः प्रयास करें।");
+            notify.error("Order could not be placed", {
+                description: "Please try again. If payment was deducted, check your orders in a moment.",
+            });
         } finally {
             setSubmitLoading(false);
         }
@@ -186,26 +201,73 @@ export default function CheckoutPage() {
     const totalPayable = Number(cart?.toPay ?? 0);
     const savings = subtotal - discountedSubtotal;
 
+    if (loading) {
+        return (
+            <div className="container mx-auto flex min-h-[60vh] items-center justify-center px-4 py-12">
+                <div className="mh-fade-up flex items-center gap-3 rounded-3xl border border-amber-100 bg-white p-5 text-sm font-black text-amber-800 shadow-sm">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Preparing checkout...
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="container mx-auto px-4 py-10 max-w-5xl">
-            <div className="flex flex-col lg:flex-row gap-12">
+        <main className="relative overflow-hidden">
+            <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(90,52,36,0.16),rgba(239,225,197,0.82)_28%,rgba(231,247,240,0.6)_76%,rgba(90,52,36,0.12)),url('/images/mithila-kapra-showcase.png')] bg-cover bg-center opacity-95" />
+            <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(67,37,23,0.08)_1px,transparent_1px),linear-gradient(0deg,rgba(15,118,110,0.07)_1px,transparent_1px)] bg-[size:42px_42px]" />
+            <div className="absolute -left-20 top-24 -z-10 h-56 w-56 rounded-full border border-primary/10" />
+            <div className="absolute -right-24 top-[460px] -z-10 h-72 w-72 rounded-full border border-emerald-700/10" />
+
+        <div className="mh-fade-up container mx-auto max-w-6xl px-3 py-6 sm:px-4 md:py-10">
+            <section className="relative mb-6 overflow-hidden rounded-[1.5rem] border border-white/55 bg-[#2b1710]/88 p-5 text-white shadow-[0_32px_100px_-55px_rgba(43,23,16,0.9)] backdrop-blur-xl sm:rounded-[2rem] md:p-7">
+                <div className="mh-rang-strip absolute inset-x-0 top-0 h-1.5" />
+                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,232,194,0.08)_1px,transparent_1px),linear-gradient(0deg,rgba(255,232,194,0.08)_1px,transparent_1px)] bg-[size:34px_34px]" />
+                <div className="relative flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+                    <div>
+                        <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/12 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-amber-100 backdrop-blur-xl">
+                            <Sparkles className="h-3.5 w-3.5" />
+                            Secure Maithil checkout
+                        </p>
+                        <h1 className="mt-4 text-3xl font-black leading-tight md:text-5xl">Order ko final rang dijiye</h1>
+                        <p className="mt-3 max-w-2xl text-sm font-semibold leading-7 text-stone-300">
+                            Address, payment aur order summary ek clean flow me, taaki handmade pieces safely ghar tak pahunch sakein.
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                        {[
+                            { label: "Address", Icon: MapPin, done: step >= 1 },
+                            { label: "Payment", Icon: CreditCard, done: step >= 2 },
+                            { label: "Review", Icon: PackageCheck, done: true },
+                        ].map((item) => (
+                            <div key={item.label} className="mh-card-hover rounded-2xl border border-white/15 bg-white/14 p-3 text-center backdrop-blur-xl">
+                                <item.Icon className={`mx-auto h-4 w-4 ${item.done ? "text-amber-200" : "text-stone-300"}`} />
+                                <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-stone-200">{item.label}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
                 {/* LEFT: Checkout Steps */}
                 <div className="flex-1 space-y-8">
 
                     {/* STEP 1: Shipping Address */}
-                    <section className={`p-6 rounded-3xl border-2 transition-all ${step === 1 ? "border-amber-700 bg-white shadow-xl" : "border-slate-100 opacity-60"}`}>
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${step >= 1 ? "bg-amber-700 text-white" : "bg-slate-200"}`}>
+                    <section className={`mh-card-hover mh-tab-option relative overflow-hidden rounded-[1.5rem] border p-4 shadow-[0_24px_80px_-52px_rgba(69,32,15,0.72)] backdrop-blur-2xl transition-all sm:p-6 ${step === 1 ? "border-primary/35 bg-[#fff8e7]/76" : "border-white/55 bg-[#fff8e7]/42 opacity-75"}`} data-active={step === 1}>
+                        <div className="mh-rang-strip absolute inset-x-0 top-0 h-1 opacity-80" />
+                        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="flex min-w-0 items-center gap-3">
+                                <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl font-black shadow-sm ${step >= 1 ? "bg-primary text-white" : "bg-stone-200 text-stone-500"}`}>
                                     1
                                 </div>
-                                <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
-                                    <MapPin className="h-4 w-4 text-amber-700" />
-                                    <span>Shipping Address</span>
+                                <h2 className="flex min-w-0 items-center gap-2 text-lg font-black tracking-tight text-[#25140d] sm:text-xl">
+                                    <MapPin className="h-4 w-4 text-primary" />
+                                    <span className="truncate">Shipping Address</span>
                                 </h2>
                             </div>
                             {step > 1 && (
-                                <Button variant="ghost" onClick={() => setStep(1)} className="text-amber-700 font-bold">
+                                <Button variant="ghost" onClick={() => setStep(1)} className="mh-press text-amber-700 font-bold">
                                     Edit
                                 </Button>
                             )}
@@ -218,7 +280,7 @@ export default function CheckoutPage() {
                                     <div className="space-y-3">
                                         <RadioGroup value={selectedAddress} onValueChange={setSelectedAddress} className="grid gap-3">
                                             {savedAddresses.map((addr, idx) => (
-                                                <Label key={idx} className={`flex items-start gap-3 p-4 border-2 rounded-2xl cursor-pointer hover:border-amber-700/50 transition-all ${selectedAddress === addr ? "border-amber-700 bg-amber-50/20" : "border-slate-100"}`}>
+                                                <Label key={idx} className={`mh-card-hover mh-tab-option flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition-all hover:border-primary/40 ${selectedAddress === addr ? "border-primary/40 bg-[linear-gradient(135deg,rgba(255,248,231,0.9),rgba(236,253,245,0.62))] shadow-sm" : "border-white/60 bg-white/48"}`} data-active={selectedAddress === addr}>
                                                     <RadioGroupItem value={addr} className="mt-0.5" />
                                                     <div className="flex flex-col gap-1">
                                                         <span className="font-bold text-sm text-slate-800">Address #{idx + 1}</span>
@@ -228,11 +290,11 @@ export default function CheckoutPage() {
                                             ))}
                                         </RadioGroup>
 
-                                        <Button variant="outline" onClick={() => setShowNewAddressForm(true)} className="w-full h-12 border-dashed border-2 hover:border-amber-700 rounded-xl text-slate-600 font-bold flex items-center justify-center gap-2">
+                                        <Button variant="outline" onClick={() => setShowNewAddressForm(true)} className="mh-press w-full h-12 border-dashed border-2 border-primary/20 bg-white/52 hover:border-primary rounded-xl text-slate-600 font-bold flex items-center justify-center gap-2">
                                             <Plus className="h-4 w-4" /> Add New Address
                                         </Button>
 
-                                        <Button onClick={() => setStep(2)} className="w-full h-14 bg-amber-700 hover:bg-amber-800 text-white rounded-2xl font-black text-lg mt-4" disabled={!selectedAddress}>
+                                        <Button onClick={() => setStep(2)} className="mh-press mh-shine w-full h-14 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black text-lg mt-4" disabled={!selectedAddress}>
                                             Deliver to Selected Address
                                         </Button>
                                     </div>
@@ -240,7 +302,7 @@ export default function CheckoutPage() {
 
                                 {/* नया एड्रेस फॉर्म */}
                                 {(showNewAddressForm || savedAddresses.length === 0) && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border p-5 rounded-2xl bg-slate-50/50">
+                                    <div className="grid grid-cols-1 gap-4 rounded-2xl border border-white/60 bg-white/48 p-4 shadow-sm backdrop-blur-xl sm:p-5 md:grid-cols-2">
                                         <h3 className="md:col-span-2 font-bold text-sm text-slate-700 uppercase tracking-wider mb-2">Create New Address</h3>
                                         
                                         <div className="space-y-2">
@@ -264,11 +326,11 @@ export default function CheckoutPage() {
                                             <Input value={pincode} onChange={(e) => setPincode(e.target.value)} placeholder="6-digit code" className="rounded-xl h-12 bg-white" />
                                         </div>
 
-                                        <div className="md:col-span-2 flex gap-3 mt-4">
+                                        <div className="mt-4 flex flex-col gap-3 md:col-span-2 sm:flex-row">
                                             {savedAddresses.length > 0 && (
-                                                <Button variant="outline" onClick={() => setShowNewAddressForm(false)} className="h-12 rounded-xl font-bold flex-1">Cancel</Button>
+                                                <Button variant="outline" onClick={() => setShowNewAddressForm(false)} className="mh-press h-12 rounded-xl font-bold flex-1">Cancel</Button>
                                             )}
-                                            <Button onClick={handleAddNewAddress} disabled={submitLoading} className="h-12 bg-amber-700 hover:bg-amber-800 text-white rounded-xl font-bold flex-[2]">
+                                            <Button onClick={handleAddNewAddress} disabled={submitLoading} className="mh-press mh-shine h-12 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold flex-[2]">
                                                 {submitLoading ? "Saving Address..." : "Save and Select Address"}
                                             </Button>
                                         </div>
@@ -279,35 +341,36 @@ export default function CheckoutPage() {
                     </section>
 
                     {/* STEP 2: Payment Method */}
-                    <section className={`p-6 rounded-3xl border-2 transition-all ${step === 2 ? "border-amber-700 bg-white shadow-xl" : "border-slate-100 opacity-60"}`}>
+                    <section className={`mh-card-hover mh-tab-option relative overflow-hidden rounded-[1.5rem] border p-4 shadow-[0_24px_80px_-52px_rgba(69,32,15,0.72)] backdrop-blur-2xl transition-all sm:p-6 ${step === 2 ? "border-primary/35 bg-[#fff8e7]/76" : "border-white/55 bg-[#fff8e7]/42 opacity-75"}`} data-active={step === 2}>
+                        <div className="mh-rang-strip absolute inset-x-0 top-0 h-1 opacity-80" />
                         <div className="flex items-center gap-3 mb-6">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${step === 2 ? "bg-amber-700 text-white" : "bg-slate-200"}`}>2</div>
-                            <h2 className="text-xl font-black tracking-tight">Payment Method</h2>
+                            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl font-black shadow-sm ${step === 2 ? "bg-primary text-white" : "bg-stone-200 text-stone-500"}`}>2</div>
+                            <h2 className="text-xl font-black tracking-tight text-[#25140d]">Payment Method</h2>
                         </div>
 
                         {step === 2 && (
                             <div className="space-y-6">
-                                <div className="p-4 bg-slate-50 border rounded-2xl mb-2">
+                                <div className="p-4 bg-white/52 border border-white/60 rounded-2xl mb-2 shadow-sm backdrop-blur-xl">
                                     <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Delivering to:</span>
                                     <span className="text-sm font-medium text-slate-700 mt-1 block">{selectedAddress || `${streetAddress}, ${city}`}</span>
                                 </div>
 
                                 <RadioGroup value={paymentMethod} onValueChange={(val) => setPaymentMethod(val as "RAZORPAY" | "COD")} className="grid gap-4">
                                     {/* ऑनलाइन पेमेंट ऑप्शन */}
-                                    <Label className={`flex items-center justify-between p-4 border-2 rounded-2xl cursor-pointer hover:border-amber-700 transition-all ${paymentMethod === "RAZORPAY" ? "border-amber-700 bg-amber-50/10" : "border-slate-100"}`}>
-                                        <div className="flex items-center gap-3">
+                                    <Label className={`mh-card-hover mh-tab-option flex cursor-pointer items-center justify-between gap-3 rounded-2xl border p-4 transition-all hover:border-primary/40 ${paymentMethod === "RAZORPAY" ? "border-primary/40 bg-[linear-gradient(135deg,rgba(255,248,231,0.92),rgba(236,253,245,0.55))]" : "border-white/60 bg-white/48"}`} data-active={paymentMethod === "RAZORPAY"}>
+                                        <div className="flex min-w-0 items-center gap-3">
                                             <RadioGroupItem value="RAZORPAY" id="razorpay" />
                                             <div>
                                                 <span className="font-bold block text-sm">Online Payment</span>
                                                 <span className="text-xs text-gray-400 block mt-0.5">Cards, UPI, Netbanking, Wallets</span>
                                             </div>
                                         </div>
-                                        <CreditCard className="h-5 w-5 text-amber-700" />
+                                        <CreditCard className="h-5 w-5 text-primary" />
                                     </Label>
 
                                     {/* COD ऑप्शन */}
-                                    <Label className={`flex items-center justify-between p-4 border-2 rounded-2xl cursor-pointer hover:border-amber-700 transition-all ${paymentMethod === "COD" ? "border-amber-700 bg-amber-50/10" : "border-slate-100"}`}>
-                                        <div className="flex items-center gap-3">
+                                    <Label className={`mh-card-hover mh-tab-option flex cursor-pointer items-center justify-between gap-3 rounded-2xl border p-4 transition-all hover:border-primary/40 ${paymentMethod === "COD" ? "border-primary/40 bg-[linear-gradient(135deg,rgba(255,248,231,0.92),rgba(255,251,235,0.62))]" : "border-white/60 bg-white/48"}`} data-active={paymentMethod === "COD"}>
+                                        <div className="flex min-w-0 items-center gap-3">
                                             <RadioGroupItem value="COD" id="cod" />
                                             <div>
                                                 <span className="font-bold block text-sm">Cash on Delivery (COD)</span>
@@ -321,7 +384,7 @@ export default function CheckoutPage() {
                                 <Button 
                                     onClick={handlePlaceOrder}
                                     disabled={submitLoading}
-                                    className="w-full h-14 bg-amber-700 hover:bg-amber-800 text-white rounded-2xl font-black text-lg shadow-xl shadow-amber-700/20"
+                                    className="mh-press mh-shine w-full h-14 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black text-lg shadow-xl shadow-primary/20"
                                 >
                                     <ChevronRight className="h-5 w-5 mr-2" />
                                     {submitLoading ? "Processing Order..." : paymentMethod === "RAZORPAY" ? "Pay & Place Order" : "Confirm COD Order"}
@@ -332,10 +395,11 @@ export default function CheckoutPage() {
                 </div>
 
                 {/* RIGHT: Order Summary */}
-                <aside className="w-full lg:w-80 h-fit sticky top-28">
-                    <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 space-y-4">
-                        <h3 className="font-black text-lg tracking-tight flex items-center gap-2">
-                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <aside className="h-fit w-full lg:sticky lg:top-28 lg:w-[22rem]">
+                    <div className="mh-fade-up-delay-1 relative overflow-hidden rounded-[1.5rem] border border-white/60 bg-[#fff8e7]/70 p-5 shadow-[0_24px_80px_-52px_rgba(69,32,15,0.78)] backdrop-blur-2xl sm:p-6">
+                        <div className="mh-rang-strip absolute inset-x-0 top-0 h-1.5" />
+                        <h3 className="font-black text-lg tracking-tight flex items-center gap-2 text-[#25140d]">
+                            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                             <span>Order Details</span>
                         </h3>
                         <div className="space-y-3">
@@ -360,14 +424,24 @@ export default function CheckoutPage() {
                                 <span>₹{platformFee.toLocaleString()}</span>
                             </div>
                             <Separator />
-                            <div className="flex justify-between text-xl font-black pt-2">
+                            <div className="flex justify-between text-xl font-black pt-2 text-[#25140d]">
                                 <span>Payable</span>
                                 <span>₹{totalPayable.toLocaleString()}</span>
                             </div>
+                        </div>
+                        <div className="mt-5 rounded-2xl border border-primary/10 bg-white/52 p-4">
+                            <p className="flex items-center gap-2 text-sm font-black text-[#25140d]">
+                                <ShieldCheck className="h-4 w-4 text-primary" />
+                                Safe checkout
+                            </p>
+                            <p className="mt-2 text-xs font-semibold leading-5 text-stone-600">
+                                Payment, address and order details are checked before placing your MaithilHaat order.
+                            </p>
                         </div>
                     </div>
                 </aside>
             </div>
         </div>
+        </main>
     );
 }

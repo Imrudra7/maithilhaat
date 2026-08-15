@@ -5,6 +5,17 @@ import { MaithilResponse } from '@/types/common';
 
 const productUrl: string = '/product/api';
 
+function normalizeProduct(product: ProductResponse): ProductResponse {
+    return {
+        ...product,
+        isActive: product.isActive ?? product.active ?? false,
+        variants: (product.variants ?? []).map((variant) => ({
+            ...variant,
+            isActive: variant.isActive ?? variant.active ?? false,
+        })),
+    };
+}
+
 export const productService = {
 
     getProductById: async (id: string): Promise<ProductResponse> => {
@@ -14,7 +25,7 @@ export const productService = {
                 `${productUrl}/${id}`
             );
 
-        return response.data.data;
+        return normalizeProduct(response.data.data);
     },
 
     getCategoryTree: async (
@@ -54,7 +65,7 @@ export const productService = {
                 MaithilResponse<ProductResponse>
             >(`${productUrl}/public/slug/${slug}`);
 
-        return response.data.data;
+        return normalizeProduct(response.data.data);
     },
 
     getAllProducts: async (): Promise<ProductResponse[]> => {
@@ -64,6 +75,6 @@ export const productService = {
                 MaithilResponse<ProductResponse[]>
             >(`${productUrl}/public/all`);
 
-        return response.data.data;
+        return response.data.data.map(normalizeProduct);
     }
 };

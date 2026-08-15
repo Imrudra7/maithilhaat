@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { toast } from "sonner"; // 🔥 Sonner use kar rahe hain
+import { notify } from "@/lib/notify";
 
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -22,6 +22,15 @@ const registerSchema = z.object({
     termsAccepted: z.boolean().refine(val => val === true, "Terms manzoor karni hogi"),
 });
 
+function getErrorMessage(error: unknown, fallback: string) {
+    if (error && typeof error === 'object' && 'response' in error) {
+        const response = (error as { response?: { data?: { message?: string } } }).response;
+        return response?.data?.message || fallback;
+    }
+
+    return fallback;
+}
+
 export default function RegisterPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
@@ -35,13 +44,13 @@ export default function RegisterPage() {
         setIsLoading(true);
         try {
             await authService.register(values);
-            toast.success("Badhai ho!", {
+            notify.success("Badhai ho!", {
                 description: "Account ban gaya hai. Ab login karein.",
             });
             router.push('/login');
-        } catch (error: any) {
-            toast.error("Registration Fail", {
-                description: error.response?.data?.message || "Kuch toh gadbad hai!",
+        } catch (error: unknown) {
+            notify.error("Registration Fail", {
+                description: getErrorMessage(error, "Kuch toh gadbad hai!"),
             });
         } finally {
             setIsLoading(false);
@@ -49,8 +58,8 @@ export default function RegisterPage() {
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-            <div className="w-full max-w-[400px] bg-white p-8 rounded-2xl shadow-sm border">
+        <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+            <div className="mh-fade-up mh-card-hover w-full max-w-[400px] rounded-2xl border bg-white p-8 shadow-sm">
                 <div className="text-center mb-8">
                     <h1 className="text-2xl font-black">Join Maithil Art</h1>
                     <p className="text-slate-500 text-sm">Apna naya account banayein</p>
@@ -83,7 +92,7 @@ export default function RegisterPage() {
                         )} />
 
                         <FormField control={form.control} name="termsAccepted" render={({ field }) => (
-                            <FormItem className="flex items-start space-x-3 space-y-0 p-4 border rounded-lg">
+                            <FormItem className="mh-card-hover flex items-start space-x-3 space-y-0 rounded-lg border p-4">
                                 <FormControl>
                                     <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                                 </FormControl>
@@ -91,7 +100,7 @@ export default function RegisterPage() {
                             </FormItem>
                         )} />
 
-                        <Button type="submit" className="w-full h-12 rounded-xl" disabled={isLoading}>
+                        <Button type="submit" className="mh-press mh-shine w-full h-12 rounded-xl" disabled={isLoading}>
                             {isLoading ? <Loader2 className="animate-spin" /> : <><UserPlus className="mr-2" size={18} /> Register</>}
                         </Button>
                     </form>
