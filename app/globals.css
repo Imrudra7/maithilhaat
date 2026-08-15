@@ -436,7 +436,7 @@
   }
 
   .maithil-display {
-    font-family: "Noto Sans Tirhuta", "Noto Serif Tirhuta", "Samarkan", "Yatra One", "Noto Serif Devanagari", "Tiro Devanagari Hindi", "Kohinoor Devanagari", "Mangal", Georgia, serif;
+    font-family: var(--font-tirhuta), "Noto Sans Tirhuta", "Nirmala UI", "Noto Serif Devanagari", "Tiro Devanagari Hindi", Georgia, serif;
     color: #f8e2bd;
     letter-spacing: 0;
     -webkit-text-stroke: 1.4px #34180f;
@@ -448,7 +448,7 @@
   }
 
   .maithil-copy {
-    font-family: "Samarkan", "Yatra One", "Noto Serif Devanagari", "Tiro Devanagari Hindi", "Kohinoor Devanagari", "Mangal", Georgia, serif;
+    font-family: var(--font-tirhuta), "Noto Sans Tirhuta", "Yatra One", "Noto Serif Devanagari", "Tiro Devanagari Hindi", Georgia, serif;
     color: #ffe8c3;
     letter-spacing: 0;
     -webkit-text-stroke: 0.45px rgba(52, 24, 15, 0.92);

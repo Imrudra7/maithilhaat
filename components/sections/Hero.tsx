@@ -1,7 +1,8 @@
 // src/components/sections/Hero.tsx
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import Link from 'next/link';
+
+import { Button } from "@/components/ui/button";
 
 export default function Hero() {
   return (
@@ -20,7 +21,10 @@ export default function Hero() {
           <div className="inline-flex max-w-full rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest backdrop-blur sm:text-xs">
             Authentic Mithila craft
           </div>
-          <h1 className="maithil-display text-4xl font-black leading-none min-[390px]:text-5xl md:text-7xl">
+          <h1
+            lang="mai-Tirh"
+            className="maithil-display text-4xl font-black leading-none min-[390px]:text-5xl md:text-7xl"
+          >
             𑒧𑒹𑒟𑒱𑒪𑒮𑒰𑒞
           </h1>
           <p className="maithil-copy max-w-2xl text-sm font-black leading-7 min-[390px]:text-base md:text-2xl md:leading-10">
