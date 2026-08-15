@@ -141,16 +141,17 @@ export default function CheckoutPage() {
                     postalCode: parsedPincode
                 };
             }
-
+            const orderKey = crypto.randomUUID();
             // 1. आर्डर क्रिएट करें (Status: PENDING_PAYMENT)
-            const order = await orderService.placeOrder(orderAddressPayload);
+            const order = await orderService.placeOrder(orderAddressPayload, orderKey);
 
+            const paymentKey = crypto.randomUUID();
             // 2. पेमेंट मेथड के हिसाब से एक्शन लें
             if (paymentMethod === "RAZORPAY") {
                 // ऑनलाइन गेटवे ट्रांजेक्शन बनाएँ
                 const payment = await paymentService.createPayment({
                     orderId: order.orderId
-                });
+                }, paymentKey);
 
                 // रेज़रपे पॉपअप खोलें
                 await openRazorpay(payment, () => {
@@ -161,7 +162,7 @@ export default function CheckoutPage() {
                 // अगर बैकेंड केवल ऑर्डर आईडी चाहता है तो उसी रूप में कॉल करें
                 await paymentService.createPayment({
                     orderId: order.orderId
-                });
+                }, paymentKey);
                 
                 alert("Order Placed Successfully via Cash on Delivery! 📦");
                 router.push(`/orders/${order.orderId}`);

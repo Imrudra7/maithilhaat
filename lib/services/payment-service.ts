@@ -1,4 +1,5 @@
 import apiClient from "@/lib/api-client";
+import { MaithilResponse } from "@/types/common";
 
 export interface CreatePaymentRequest {
     orderId: string;
@@ -31,12 +32,20 @@ export interface PaymentResponse {
 class PaymentService {
 
     async createPayment(
-        request: CreatePaymentRequest
+        request: CreatePaymentRequest,
+        idempotencyKey: string
     ): Promise<PaymentResponse> {
 
-        const response = await apiClient.post(
+        const response = await apiClient.post<
+            MaithilResponse<PaymentResponse>
+        >(
             "/payment/api",
-            request
+            request,
+            {
+                headers: {
+                    "Idempotency-Key": idempotencyKey
+                }
+            }
         );
 
         return response.data.data;
@@ -65,12 +74,18 @@ class PaymentService {
     }
 
     async verifyPayment(
-        request: VerifyPaymentRequest
+        request: VerifyPaymentRequest,
+        idempotencyKey: string
     ): Promise<PaymentResponse> {
 
         const response = await apiClient.post(
             "/payment/api/verify",
-            request
+            request,
+            {
+                headers: {
+                    "Idempotency-Key": idempotencyKey
+                }
+            }
         );
 
         return response.data.data;

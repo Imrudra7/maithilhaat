@@ -74,12 +74,18 @@ export interface OrderResponse {
 class OrderService {
 
     async placeOrder(
-        request: PlaceOrderRequest
+        request: PlaceOrderRequest,
+        idempotencyKey: string
     ): Promise<OrderResponse> {
 
         const response = await apiClient.post(
             "/order/api",
-            request
+            request,
+            {
+                headers: {
+                    "Idempotency-Key": idempotencyKey
+                }
+            }
         );
 
         return response.data.data;

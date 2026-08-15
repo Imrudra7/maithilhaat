@@ -16,7 +16,7 @@ export default function ProfilePage() {
     const [phoneNumber, setPhoneNumber] = useState("");
     const [bio, setBio] = useState("");
     const [addresses, setAddresses] = useState<string[]>([]);
-    
+
     // Image Upload Ref & State
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -63,7 +63,7 @@ export default function ProfilePage() {
                 phoneNumber,
                 addresses
             };
-            
+
             // यहाँ तुम bio भी भेज सकते हो अगर UserProfileRequest में backend पर मौजूद है
             // (अगर Request DTO में bio नहीं है, तो उसे DTO में भी जोड़ लेना)
             await userService.updateUserProfile(updatePayload);
@@ -75,7 +75,7 @@ export default function ProfilePage() {
 
                 // TODO: यहाँ अपनी इमेज अपलोड की API कॉल डालना, जैसे:
                 // await apiClient.post(`/user/api/profile/avatar`, formData, {
-                //     headers: { 'Content-Type': 'multipart/form-data' }
+                //     headers: { 'Content-Type': 'multipart/form-data', "Idempotency-Key": idempotencyKey }
                 // });
             }
 
@@ -116,24 +116,24 @@ export default function ProfilePage() {
 
     return (
         <main className="max-w-4xl mx-auto p-4 md:p-8 space-y-6">
-            
+
             {/* Hidden File Input for Avatar */}
-            <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleImageChange} 
-                accept="image/*" 
-                className="hidden" 
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageChange}
+                accept="image/*"
+                className="hidden"
             />
 
             {/* --- HEADER BANNER CARD --- */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="h-32 bg-gradient-to-r from-orange-500 to-amber-500 w-full" />
-                
+
                 <div className="px-6 pb-6 flex flex-col sm:flex-row items-center sm:items-end gap-5 -mt-14 text-center sm:text-left">
-                    
+
                     {/* Avatar Group with Click-to-Upload Indicator */}
-                    <div 
+                    <div
                         onClick={() => isEditing && fileInputRef.current?.click()}
                         className={`relative w-28 h-28 rounded-full border-4 border-white shadow-md overflow-hidden bg-white group ${isEditing ? 'cursor-pointer ring-2 ring-orange-500 ring-offset-2' : ''}`}
                     >
@@ -155,10 +155,10 @@ export default function ProfilePage() {
                         {isEditing ? (
                             <div className="max-w-xs mt-4 sm:mt-0">
                                 <label htmlFor="fullName" className="text-xs font-semibold text-gray-400 block mb-1 text-left">FULL NAME</label>
-                                <input 
+                                <input
                                     id="fullName"
-                                    type="text" 
-                                    value={fullName} 
+                                    type="text"
+                                    value={fullName}
                                     onChange={(e) => setFullName(e.target.value)}
                                     className="w-full px-3 py-1.5 border border-gray-200 rounded-xl text-sm focus:outline-orange-500"
                                 />
@@ -175,13 +175,13 @@ export default function ProfilePage() {
                     <div className="flex gap-2 w-full sm:w-auto">
                         {isEditing ? (
                             <>
-                                <button 
+                                <button
                                     onClick={() => { setIsEditing(false); fetchProfileData(); }}
                                     className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-xl transition w-full sm:w-auto"
                                 >
                                     Cancel
                                 </button>
-                                <button 
+                                <button
                                     onClick={handleSave}
                                     disabled={submitLoading}
                                     className="px-4 py-2 bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium rounded-xl transition shadow-sm w-full sm:w-auto disabled:opacity-50"
@@ -190,7 +190,7 @@ export default function ProfilePage() {
                                 </button>
                             </>
                         ) : (
-                            <button 
+                            <button
                                 onClick={() => setIsEditing(true)}
                                 className="px-4 py-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium rounded-xl transition shadow-sm w-full sm:w-auto"
                             >
@@ -213,15 +213,15 @@ export default function ProfilePage() {
 
             {/* --- CORE DETAILS SECTION --- */}
             <div className="grid md:grid-cols-3 gap-6">
-                
+
                 {/* Left Side: Bio & Addresses */}
                 <div className="md:col-span-2 space-y-6">
                     {/* Bio Card */}
                     <div className="p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
                         <h2 className="text-base font-semibold text-gray-800 mb-3">About Me</h2>
                         {isEditing ? (
-                            <textarea 
-                                value={bio} 
+                            <textarea
+                                value={bio}
                                 onChange={(e) => setBio(e.target.value)}
                                 rows={4}
                                 className="w-full p-3 border border-gray-200 rounded-xl text-sm focus:outline-orange-500"
@@ -240,15 +240,15 @@ export default function ProfilePage() {
                                 <button onClick={addAddressField} className="text-xs font-bold text-orange-600 hover:underline">+ Add Address</button>
                             )}
                         </div>
-                        
+
                         <div className="space-y-3">
                             {addresses.map((address, index) => (
                                 <div key={index} className="flex gap-3 items-center">
                                     {isEditing ? (
                                         <>
-                                            <input 
-                                                type="text" 
-                                                value={address} 
+                                            <input
+                                                type="text"
+                                                value={address}
                                                 onChange={(e) => handleAddressChange(index, e.target.value)}
                                                 className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-orange-500"
                                             />
@@ -273,13 +273,13 @@ export default function ProfilePage() {
                 <div className="space-y-6">
                     <div className="p-6 bg-white rounded-2xl shadow-sm border border-gray-100 space-y-4">
                         <h2 className="text-base font-semibold text-gray-800 border-b pb-2">Information</h2>
-                        
+
                         <div>
                             <span className="text-xs text-gray-400 block font-medium uppercase mb-1">Phone Number</span>
                             {isEditing ? (
-                                <input 
-                                    type="text" 
-                                    value={phoneNumber} 
+                                <input
+                                    type="text"
+                                    value={phoneNumber}
                                     onChange={(e) => setPhoneNumber(e.target.value)}
                                     className="w-full px-3 py-1.5 border border-gray-200 rounded-xl text-sm focus:outline-orange-500"
                                 />
@@ -287,7 +287,7 @@ export default function ProfilePage() {
                                 <span className="text-sm text-gray-700 font-medium">{userProfile.phoneNumber || "Not Provided"}</span>
                             )}
                         </div>
-                        
+
                         <div>
                             <span className="text-xs text-gray-400 block font-medium uppercase">Email (Read Only)</span>
                             <span className="text-sm text-gray-500 font-medium">{userProfile.email}</span>
