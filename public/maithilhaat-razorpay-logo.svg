@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">MaithilHaat</title>
+  <rect width="128" height="128" rx="30" fill="#2b1710"/>
+  <circle cx="64" cy="64" r="44" fill="#fff8e7" opacity=".12"/>
+  <circle cx="64" cy="64" r="34" fill="none" stroke="#f5b84b" stroke-width="5"/>
+  <path d="M64 31c7 17 18 27 35 33-17 6-28 16-35 33-7-17-18-27-35-33 17-6 28-16 35-33Z" fill="#fff8e7"/>
+  <path d="M64 45c4 9 10 15 19 19-9 4-15 10-19 19-4-9-10-15-19-19 9-4 15-10 19-19Z" fill="#b45309"/>
+  <circle cx="64" cy="64" r="6" fill="#0f766e"/>
+  <path d="M24 24h80" stroke="#b91c1c" stroke-width="6" stroke-linecap="round"/>
+  <path d="M24 104h80" stroke="#0f766e" stroke-width="6" stroke-linecap="round"/>
+</svg>

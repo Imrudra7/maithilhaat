@@ -167,6 +167,9 @@ export default function CheckoutPage() {
                 // रेज़रपे पॉपअप खोलें
                 await openRazorpay(payment, () => {
                     router.push(`/orders/${order.orderId}`);
+                }, {
+                    name: fullName || "MaithilHaat Customer",
+                    contact: phoneNumber,
                 });
             } else {
                 // Cash on Delivery (COD) फ्लो
@@ -362,7 +365,13 @@ export default function CheckoutPage() {
                                             <RadioGroupItem value="RAZORPAY" id="razorpay" />
                                             <div>
                                                 <span className="font-bold block text-sm">Online Payment</span>
-                                                <span className="text-xs text-gray-400 block mt-0.5">Cards, UPI, Netbanking, Wallets</span>
+                                                <span className="text-xs text-gray-400 block mt-0.5">UPI, Cards, Netbanking, Wallets</span>
+                                                <span className="mt-2 inline-flex max-w-full flex-wrap gap-1.5 rounded-xl border border-emerald-700/10 bg-emerald-50 px-3 py-2 text-[11px] font-black text-emerald-700">
+                                                    Test mode UPI:
+                                                    <span className="font-mono">success@razorpay</span>
+                                                    <span className="text-emerald-600/70">or</span>
+                                                    <span className="font-mono">failure@razorpay</span>
+                                                </span>
                                             </div>
                                         </div>
                                         <CreditCard className="h-5 w-5 text-primary" />
