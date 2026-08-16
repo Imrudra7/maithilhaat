@@ -51,15 +51,15 @@ const supportCards = [
 
 const journeySteps = [
   { key: "PENDING_PAYMENT", label: "Payment", Icon: CreditCard },
-  { key: "CONFIRMED", label: "Confirmed", Icon: CheckCircle2 },
-  { key: "PACKED", label: "Packed", Icon: PackageCheck },
-  { key: "SHIPPED", label: "Shipped", Icon: Truck },
-  { key: "DELIVERED", label: "Delivered", Icon: Home },
+  { key: "ORDER_CONFIRMED", label: "Confirmed", Icon: CheckCircle2 },
+  { key: "ORDER_PACKED", label: "Packed", Icon: PackageCheck },
+  { key: "ORDERSHIPPED", label: "Shipped", Icon: Truck },
+  { key: "ORDER_DELIVERED", label: "Delivered", Icon: Home },
 ];
 
 function getStatusMeta(status: string) {
   switch (status) {
-    case "CONFIRMED":
+    case "ORDER_CONFIRMED":
       return {
         label: "Confirmed",
         Icon: CheckCircle2,
@@ -69,7 +69,7 @@ function getStatusMeta(status: string) {
         headline: "Order accepted",
         copy: "Your MaithilHaat pieces are confirmed and getting ready for careful packing.",
       };
-    case "DELIVERED":
+    case "ORDER_DELIVERED":
       return {
         label: "Delivered",
         Icon: PackageCheck,
@@ -79,7 +79,7 @@ function getStatusMeta(status: string) {
         headline: "Delivered home",
         copy: "This handmade collection has reached its new home.",
       };
-    case "PENDING_PAYMENT":
+    case "ORDER_PAYMENT_PENDING":
       return {
         label: "Payment Pending",
         Icon: Clock,
@@ -128,8 +128,8 @@ function formatAmount(amount: number) {
 
 function getJourneyIndex(status: string) {
   const index = journeySteps.findIndex((step) => step.key === status);
-  if (status === "CONFIRMED") return 1;
-  if (["FAILED", "CANCELLED", "TIMEOUT"].includes(status)) return -1;
+  if (status === "ORDER_CONFIRMED") return 1;
+  if (["ORDER_FAILED", "ORDER_CANCELLED", "ORDER_TIMEOUT"].includes(status)) return -1;
   return index >= 0 ? index : 1;
 }
 
