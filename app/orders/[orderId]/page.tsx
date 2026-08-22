@@ -53,7 +53,7 @@ const journeySteps = [
   { key: "PENDING_PAYMENT", label: "Payment", Icon: CreditCard },
   { key: "ORDER_CONFIRMED", label: "Confirmed", Icon: CheckCircle2 },
   { key: "ORDER_PACKED", label: "Packed", Icon: PackageCheck },
-  { key: "ORDERSHIPPED", label: "Shipped", Icon: Truck },
+  { key: "ORDER_SHIPPED", label: "Shipped", Icon: Truck },
   { key: "ORDER_DELIVERED", label: "Delivered", Icon: Home },
 ];
 
@@ -73,9 +73,9 @@ function getStatusMeta(status: string) {
       return {
         label: "Delivered",
         Icon: PackageCheck,
-        badge: "bg-teal-100 text-teal-700",
-        accent: "text-teal-600",
-        panel: "bg-teal-50 border-teal-100",
+        badge: "bg-emerald-100 text-emerald-700",
+        accent: "text-emerald-600",
+        panel: "bg-emerald-50 border-emerald-100",
         headline: "Delivered home",
         copy: "This handmade collection has reached its new home.",
       };
@@ -83,9 +83,9 @@ function getStatusMeta(status: string) {
       return {
         label: "Payment Pending",
         Icon: Clock,
-        badge: "bg-amber-100 text-amber-800",
-        accent: "text-amber-700",
-        panel: "bg-amber-50 border-amber-100",
+        badge: "bg-emerald-100 text-emerald-700",
+        accent: "text-emerald-600",
+        panel: "bg-emerald-50 border-emerald-100",
         headline: "Payment pending",
         copy: "Complete payment to confirm this MaithilHaat order.",
       };
@@ -105,9 +105,9 @@ function getStatusMeta(status: string) {
       return {
         label: status.replaceAll("_", " "),
         Icon: Truck,
-        badge: "bg-stone-100 text-stone-700",
-        accent: "text-stone-600",
-        panel: "bg-stone-50 border-stone-100",
+        badge: "bg-emerald-100 text-emerald-700",
+        accent: "text-emerald-600",
+        panel: "bg-emerald-50 border-emerald-100",
         headline: "Order in progress",
         copy: "Your order details are available below.",
       };
@@ -249,6 +249,10 @@ export default function OrderDetailsPage() {
         <section className="mh-fade-up relative mb-7 overflow-hidden rounded-[1.5rem] border border-white/55 bg-[#2b1710]/88 text-white shadow-[0_32px_100px_-55px_rgba(43,23,16,0.9)] backdrop-blur-xl sm:rounded-[2rem]">
           <div className="mh-rang-strip absolute inset-x-0 top-0 h-1.5" />
           <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(43,23,16,0.34),rgba(43,23,16,0.92)),url('/images/maithil-art-gallery-hero.png')] bg-cover bg-center opacity-48" />
+          <Badge className={`${summary.statusMeta.badge} absolute right-4 top-5 z-10 hidden border-none px-5 py-2 text-sm font-black shadow-[0_16px_35px_-24px_rgba(6,95,70,0.7)] backdrop-blur-xl sm:inline-flex lg:right-10 lg:top-10`}>
+            <StatusIcon className="h-4 w-4" />
+            {summary.statusMeta.label}
+          </Badge>
           <div className="relative grid gap-7 p-4 sm:p-6 lg:grid-cols-[1fr_360px] lg:p-10">
             <div className="space-y-5">
               <Button
@@ -261,8 +265,8 @@ export default function OrderDetailsPage() {
               </Button>
 
               <div>
-                <Badge className={`${summary.statusMeta.badge} border-none px-3 py-1.5 font-black`}>
-                  <StatusIcon className="h-3.5 w-3.5" />
+                <Badge className={`${summary.statusMeta.badge} border-none px-4 py-2 font-black sm:hidden`}>
+                  <StatusIcon className="h-4 w-4" />
                   {summary.statusMeta.label}
                 </Badge>
                 <h1 className="mt-4 max-w-3xl text-3xl font-black leading-tight tracking-tight sm:text-4xl md:text-5xl">
@@ -313,6 +317,7 @@ export default function OrderDetailsPage() {
           <div className="grid gap-3 md:grid-cols-5">
             {journeySteps.map((step, index) => {
               const isDone = activeJourneyIndex >= index;
+              const isCurrent = activeJourneyIndex === index;
               const isBlocked = activeJourneyIndex < 0;
               const StepIcon = step.Icon;
 
@@ -320,7 +325,9 @@ export default function OrderDetailsPage() {
                 <div
                   key={step.key}
                   className={`mh-tab-option rounded-2xl border p-4 ${
-                    isDone && !isBlocked
+                    isCurrent && !isBlocked
+                      ? "border-emerald-500/30 bg-emerald-500/12 text-emerald-800 shadow-[0_18px_42px_-30px_rgba(4,120,87,0.62)]"
+                      : isDone && !isBlocked
                       ? "border-primary/25 bg-primary/10 text-primary"
                       : "border-white/60 bg-white/42 text-stone-500"
                   }`}
@@ -328,7 +335,9 @@ export default function OrderDetailsPage() {
                 >
                   <div className="flex items-center gap-3 md:block">
                     <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${
-                      isDone && !isBlocked
+                      isCurrent && !isBlocked
+                        ? "border-emerald-500/20 bg-white text-emerald-700"
+                        : isDone && !isBlocked
                         ? "border-primary/15 bg-white text-primary"
                         : "border-stone-200 bg-white/62 text-stone-400"
                     }`}>
