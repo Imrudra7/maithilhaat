@@ -31,6 +31,28 @@ export default function Navbar() {
     const router = useRouter();
     const { isLoggedIn, user, logout } = useAuth();
     const [cartCount, setCartCount] = useState(0);
+    const [cartAnimating, setCartAnimating] = useState(false);
+    const [cartActionLabel, setCartActionLabel] = useState('');
+
+    useEffect(() => {
+        const handleCartUpdated = (event: Event) => {
+            const customEvent = event as CustomEvent<{ action?: string; count?: number }>;
+            setCartCount(customEvent.detail?.count ?? 0);
+            setCartActionLabel(customEvent.detail?.action === 'add' ? 'Added' : 'Updated');
+            setCartAnimating(false);
+            window.requestAnimationFrame(() => setCartAnimating(true));
+            window.setTimeout(() => {
+                setCartAnimating(false);
+                setCartActionLabel('');
+            }, 1300);
+        };
+
+        window.addEventListener('maithilhaat:cart-updated', handleCartUpdated);
+
+        return () => {
+            window.removeEventListener('maithilhaat:cart-updated', handleCartUpdated);
+        };
+    }, []);
 
     useEffect(() => {
         if (!isLoggedIn) {
@@ -49,18 +71,11 @@ export default function Navbar() {
             }
         };
 
-        const handleCartUpdated = (event: Event) => {
-            const customEvent = event as CustomEvent<{ count?: number }>;
-            setCartCount(customEvent.detail?.count ?? 0);
-        };
-
         fetchCartCount();
-        window.addEventListener('maithilhaat:cart-updated', handleCartUpdated);
         window.addEventListener('focus', fetchCartCount);
 
         return () => {
             isMounted = false;
-            window.removeEventListener('maithilhaat:cart-updated', handleCartUpdated);
             window.removeEventListener('focus', fetchCartCount);
         };
     }, [isLoggedIn]);
@@ -177,11 +192,19 @@ export default function Navbar() {
                         variant="outline"
                         onClick={handleCartClick}
                         aria-label="Open cart"
-                        className="mh-press relative flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-stone-200 bg-white/85 p-0"
+                        className={`mh-press relative flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-stone-200 bg-white/85 p-0 ${cartAnimating ? 'mh-cart-pop border-primary bg-[#fff8e7]' : ''}`}
                     >
-                        <ShoppingCart size={20} />
+                        {cartAnimating && <span className="mh-cart-ring absolute inset-0 rounded-2xl" />}
+                        {cartActionLabel && (
+                            <span className="mh-cart-toast absolute right-11 top-1/2 hidden -translate-y-1/2 whitespace-nowrap rounded-full bg-[#2b1710] px-3 py-1.5 text-xs font-black text-white shadow-lg md:inline-flex">
+                                {cartActionLabel}
+                            </span>
+                        )}
+                        <span className={cartAnimating ? 'mh-cart-icon-pop' : ''}>
+                            <ShoppingCart size={20} />
+                        </span>
                         {cartCount > 0 && (
-                            <Badge className="absolute -right-2 -top-2 h-5 min-w-[20px] border-2 border-background bg-primary px-1.5">
+                            <Badge className={`absolute -right-2 -top-2 h-5 min-w-[20px] border-2 border-background bg-primary px-1.5 ${cartAnimating ? 'mh-cart-badge-pop' : ''}`}>
                                 {cartCount}
                             </Badge>
                         )}

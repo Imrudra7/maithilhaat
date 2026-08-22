@@ -15,11 +15,12 @@ function getDistinctProductCount(cart: CartResponse): number {
     return new Set((cart.items ?? []).map((item) => item.productId)).size;
 }
 
-function emitCartUpdated(cart: CartResponse) {
+function emitCartUpdated(cart: CartResponse, action: 'add' | 'update' | 'delete' | 'clear' = 'update') {
     if (typeof window === 'undefined') return;
 
     window.dispatchEvent(new CustomEvent('maithilhaat:cart-updated', {
         detail: {
+            action,
             count: getDistinctProductCount(cart),
             cart,
         },
@@ -47,7 +48,7 @@ export const cartService = {
             );
 
         notify.success(response.data.message);
-        emitCartUpdated(response.data.data);
+        emitCartUpdated(response.data.data, 'add');
 
         return response.data.data;
     },
@@ -63,7 +64,7 @@ export const cartService = {
             );
 
         notify.success(response.data.message);
-        emitCartUpdated(response.data.data);
+        emitCartUpdated(response.data.data, 'update');
 
         return response.data.data;
     },
@@ -81,7 +82,7 @@ export const cartService = {
             );
 
         notify.success(response.data.message);
-        emitCartUpdated(response.data.data);
+        emitCartUpdated(response.data.data, 'delete');
 
         return response.data.data;
     },
@@ -94,7 +95,7 @@ export const cartService = {
             );
 
         notify.success(response.data.message);
-        emitCartUpdated(response.data.data);
+        emitCartUpdated(response.data.data, 'clear');
 
         return response.data.data;
     }
