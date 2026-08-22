@@ -69,90 +69,98 @@ export async function openRazorpay(
     onSuccess: () => void,
     prefill?: RazorpayCustomerPrefill
 ) {
-    const options: RazorpayOptions = {
-        key: payment.razorpayKey,
+    return new Promise<void>((resolve, reject) => {
+        const options: RazorpayOptions = {
+            key: payment.razorpayKey,
 
-        amount: payment.amount * 100,
+            amount: payment.amount * 100,
 
-        currency: payment.currency,
+            currency: payment.currency,
 
-        order_id: payment.gatewayOrderId,
+            order_id: payment.gatewayOrderId,
 
-        name: "MaithilHaat",
+            name: "MaithilHaat",
 
-        description: "Mithila craft order payment",
+            description: "Mithila craft order payment",
 
-        image: `${window.location.origin}/maithilhaat-razorpay-logo.svg`,
+            image: `${window.location.origin}/maithilhaat-razorpay-logo.svg`,
 
-        prefill,
+            prefill,
 
-        notes: {
-            brand: "MaithilHaat",
-            orderId: payment.orderId,
-            gateway: payment.gateway,
-        },
+            notes: {
+                brand: "MaithilHaat",
+                orderId: payment.orderId,
+                gateway: payment.gateway,
+            },
 
-        method: {
-            upi: true,
-            card: true,
-            netbanking: true,
-            wallet: true,
-            paylater: true,
-        },
+            method: {
+                upi: true,
+                card: true,
+                netbanking: true,
+                wallet: true,
+                paylater: true,
+            },
 
-        config: {
-            display: {
-                blocks: {
-                    upi: {
-                        name: "UPI",
-                        instruments: [{ method: "upi" }],
+            config: {
+                display: {
+                    blocks: {
+                        upi: {
+                            name: "UPI",
+                            instruments: [{ method: "upi" }],
+                        },
+                        card: {
+                            name: "Cards",
+                            instruments: [{ method: "card" }],
+                        },
+                        netbanking: {
+                            name: "Netbanking",
+                            instruments: [{ method: "netbanking" }],
+                        },
+                        wallet: {
+                            name: "Wallets",
+                            instruments: [{ method: "wallet" }],
+                        },
                     },
-                    card: {
-                        name: "Cards",
-                        instruments: [{ method: "card" }],
-                    },
-                    netbanking: {
-                        name: "Netbanking",
-                        instruments: [{ method: "netbanking" }],
-                    },
-                    wallet: {
-                        name: "Wallets",
-                        instruments: [{ method: "wallet" }],
+                    sequence: ["block.upi", "block.card", "block.netbanking", "block.wallet"],
+                    preferences: {
+                        show_default_blocks: true,
                     },
                 },
-                sequence: ["block.upi", "block.card", "block.netbanking", "block.wallet"],
-                preferences: {
-                    show_default_blocks: true,
+            },
+
+            handler: async function (response) {
+                try {
+                    await paymentService.verifyPayment({
+                        paymentId: payment.paymentId,
+
+                        providerOrderId: response.razorpay_order_id,
+
+                        providerPaymentId: response.razorpay_payment_id,
+
+                        providerSignature: response.razorpay_signature,
+                    }, crypto.randomUUID());
+
+                    onSuccess();
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                }
+            },
+
+            modal: {
+                ondismiss: function () {
+                    console.log("Payment cancelled");
+                    resolve();
                 },
             },
-        },
 
-        handler: async function (response) {
-            await paymentService.verifyPayment({
-                paymentId: payment.paymentId,
-
-                providerOrderId: response.razorpay_order_id,
-
-                providerPaymentId: response.razorpay_payment_id,
-
-                providerSignature: response.razorpay_signature,
-            }, crypto.randomUUID());
-
-            onSuccess();
-        },
-
-        modal: {
-            ondismiss: function () {
-                console.log("Payment cancelled");
+            theme: {
+                color: "#2B1710",
             },
-        },
+        };
 
-        theme: {
-            color: "#2B1710",
-        },
-    };
+        const razorpay = new window.Razorpay(options);
 
-    const razorpay = new window.Razorpay(options);
-
-    razorpay.open();
+        razorpay.open();
+    });
 }

@@ -217,6 +217,17 @@ export default function CheckoutPage() {
 
     return (
         <main className="relative overflow-hidden">
+            {submitLoading && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2b1710]/72 px-4 backdrop-blur-md">
+                    <div className="flex w-full max-w-sm flex-col items-center rounded-[1.5rem] border border-white/20 bg-[#fff8e7] p-6 text-center shadow-2xl">
+                        <Loader2 className="h-9 w-9 animate-spin text-primary" />
+                        <h2 className="mt-4 text-xl font-black text-[#25140d]">Processing payment</h2>
+                        <p className="mt-2 text-sm font-semibold leading-6 text-stone-600">
+                            Please wait while we verify your payment and confirm the order.
+                        </p>
+                    </div>
+                </div>
+            )}
             <div className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(90,52,36,0.16),rgba(239,225,197,0.82)_28%,rgba(231,247,240,0.6)_76%,rgba(90,52,36,0.12)),url('/images/mithila-kapra-showcase.png')] bg-cover bg-center opacity-95" />
             <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(67,37,23,0.08)_1px,transparent_1px),linear-gradient(0deg,rgba(15,118,110,0.07)_1px,transparent_1px)] bg-[size:42px_42px]" />
             <div className="absolute -left-20 top-24 -z-10 h-56 w-56 rounded-full border border-primary/10" />

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import {
   BadgeCheck,
@@ -22,6 +23,7 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { cartService } from "@/lib/services/cart-service";
 import { productService } from "@/lib/services/product-service";
+import { useAuth } from "@/context/AuthContext";
 import { CartItemResponse, CartResponse } from "@/types/cart";
 
 const FALLBACK_PRODUCT_IMAGE = "/images/maithil-art-gallery-hero.png";
@@ -33,6 +35,8 @@ const trustNotes = [
 ];
 
 export default function CartPage() {
+  const router = useRouter();
+  const { isLoggedIn, isLoading: authLoading } = useAuth();
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [productSlugs, setProductSlugs] = useState<Record<string, string>>({});
@@ -66,6 +70,16 @@ export default function CartPage() {
   };
 
   useEffect(() => {
+    if (authLoading) {
+      return;
+    }
+
+    if (!isLoggedIn) {
+      router.replace("/login?redirect=/cart&reason=cart");
+      setLoading(false);
+      return;
+    }
+
     const loadCart = async () => {
       setLoading(true);
       try {
@@ -82,7 +96,7 @@ export default function CartPage() {
     loadCart();
     // Initial cart hydration should run once on mount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [authLoading, isLoggedIn, router]);
 
   const items = cart?.items ?? [];
   const itemCount = items.reduce((count, item) => count + item.quantity, 0);

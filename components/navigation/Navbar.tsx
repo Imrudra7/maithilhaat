@@ -76,6 +76,22 @@ export default function Navbar() {
         }
     };
 
+    const handleCartClick = () => {
+        if (isLoggedIn) {
+            router.push('/cart');
+            return;
+        }
+
+        router.push('/login?redirect=/cart&reason=cart');
+    };
+
+    const navItems = [
+        { href: '/shop', label: 'Shop' },
+        { href: '/orders', label: 'Orders' },
+        { href: '/wishlist', label: 'Wishlist' },
+        { href: '/cart', label: 'Cart', requiresLogin: true },
+    ];
+
     return (
         <header className="sticky top-0 z-50 w-full border-b border-stone-200/80 bg-background/90 backdrop-blur-xl supports-[backdrop-filter]:bg-background/75">
             <div className="bg-[#2b1710] px-3 py-2 text-center text-[10px] font-bold leading-4 tracking-wide text-white md:text-xs">
@@ -157,14 +173,19 @@ export default function Navbar() {
                         </Link>
                     )}
 
-                    <Link href="/cart">
-                        <Button variant="outline" className="mh-press relative flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-stone-200 bg-white/85 p-0">
-                            <ShoppingCart size={20} />
-                            <Badge className="absolute -top-2 -right-2 bg-primary border-2 border-background px-1.5 min-w-[20px] h-5">
+                    <Button
+                        variant="outline"
+                        onClick={handleCartClick}
+                        aria-label="Open cart"
+                        className="mh-press relative flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-stone-200 bg-white/85 p-0"
+                    >
+                        <ShoppingCart size={20} />
+                        {cartCount > 0 && (
+                            <Badge className="absolute -right-2 -top-2 h-5 min-w-[20px] border-2 border-background bg-primary px-1.5">
                                 {cartCount}
                             </Badge>
-                        </Button>
-                    </Link>
+                        )}
+                    </Button>
 
                     <Sheet>
                         <SheetTrigger asChild>
@@ -196,15 +217,10 @@ export default function Navbar() {
                                 </div>
 
                                 <nav className="grid gap-2 text-sm font-black text-[#2b1710]">
-                                    {[
-                                        { href: '/shop', label: 'Shop' },
-                                        { href: '/orders', label: 'Orders' },
-                                        { href: '/wishlist', label: 'Wishlist' },
-                                        { href: '/cart', label: 'Cart' },
-                                    ].map((item) => (
+                                    {navItems.map((item) => (
                                         <SheetClose asChild key={item.href}>
                                             <Link
-                                                href={item.href}
+                                                href={!isLoggedIn && item.requiresLogin ? `/login?redirect=${item.href}&reason=cart` : item.href}
                                                 className="mh-card-hover rounded-2xl border border-[#2b1710]/10 bg-white/58 px-4 py-3 shadow-sm backdrop-blur-xl hover:bg-white"
                                             >
                                                 {item.label}
