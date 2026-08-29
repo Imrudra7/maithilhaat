@@ -67,8 +67,8 @@ export default function MithilaShowcaseSlider() {
             key={slide.image}
             src={slide.image}
             alt={`${slide.title} showcase`}
-              className={`absolute inset-0 h-full w-full object-cover transition-all duration-[1100ms] ease-out ${
-              index === activeIndex ? 'scale-100 opacity-100 blur-0' : 'scale-105 opacity-0 blur-sm'
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-out ${
+              index === activeIndex ? 'opacity-100' : 'opacity-0'
             }`}
           />
         ))}
