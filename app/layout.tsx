@@ -3,7 +3,6 @@ import { Inter, Noto_Sans_Tirhuta } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/navigation/Navbar";
 import Footer from "@/components/navigation/Footer";
-import ScrollProgress from "@/components/motion/ScrollProgress";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/context/AuthContext";
 import Script from "next/script";
@@ -27,7 +26,6 @@ export default function RootLayout({
       <body className={`${inter.className} ${tirhuta.variable} min-h-screen bg-background`}>
         {/* 🔥 AuthProvider ko sabse upar rakho taaki Navbar ko bhi access mile */}
         <AuthProvider>
-          <ScrollProgress />
           <Navbar />
 
           <main className="relative flex flex-col min-h-screen">

@@ -2,7 +2,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:8083',
+  baseURL: process.env.NEXT_PUBLIC_GATEWAY_URL,
   withCredentials: true,
 });
 // src/lib/api-client.ts
